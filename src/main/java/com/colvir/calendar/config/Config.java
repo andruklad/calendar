@@ -10,7 +10,7 @@ public class Config {
 
     private final String calendarUrl;
 
-    public Config(@Value("${calendar.url}") String calendarUrl) {
+    public Config(@Value("${app.calendar.url}") String calendarUrl) {
         this.calendarUrl = calendarUrl;
     }
 }

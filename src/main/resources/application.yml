@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: calendar
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+server:
+  servlet:
+    context-path: /api
+
+app:
+  calendar:
+    url: https://xmlcalendar.ru/data

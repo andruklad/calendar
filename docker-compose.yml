@@ -1,0 +1,16 @@
+version: '2'
+services:
+
+  pg:
+    image: postgres:14-alpine3.17
+    container_name: pg
+    environment:
+      POSTGRES_PASSWORD: "postgres"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/pgsql/data
+
+volumes:
+  pgdata:
+
