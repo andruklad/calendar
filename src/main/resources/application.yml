@@ -19,3 +19,4 @@ server:
 app:
   calendar:
     url: https://xmlcalendar.ru/data
+  loadCalendarInterval: 50000
