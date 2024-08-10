@@ -1,9 +1,12 @@
 package com.colvir.calendar.service;
 
 import com.colvir.calendar.config.Config;
-import com.colvir.calendar.entity.CalendarOriginalStatus;
+import com.colvir.calendar.dto.CalendarData;
 import com.colvir.calendar.entity.CalendarOriginal;
+import com.colvir.calendar.entity.RecordStatus;
 import com.colvir.calendar.repository.CalendarOriginalRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
@@ -25,7 +28,11 @@ public class CalendarOriginalService {
 
     private final String FILE_NAME = "calendar.json";
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     private final CalendarOriginalRepository calendarOriginalRepository;
+
+    private final CalendarFinalService calendarFinalService;
 
     private String loadFromUrl(String country, String year) {
 
@@ -39,18 +46,19 @@ public class CalendarOriginalService {
         return calendar;
     }
 
-    private List<CalendarOriginal> findActualCalendar(String country, String year) {
+    private List<CalendarOriginal> findCalendarActual(String country, String year) {
 
         List<CalendarOriginal> calendarOriginalList = calendarOriginalRepository.findAllByCountryAndYearAndIsArchived(country, year, false);
         return calendarOriginalList;
     }
 
+    // Отправка актуальных записей по календарю в архив
     private void setArchiveCalendarsList(List<CalendarOriginal> calendarOriginalList) {
 
         calendarOriginalList.stream()
-                .forEach(cl -> {
-                    cl.setIsArchived(true);
-                    calendarOriginalRepository.save(cl);
+                .forEach(calendarOriginal -> {
+                    calendarOriginal.setIsArchived(true);
+                    calendarOriginalRepository.save(calendarOriginal);
                 });
     }
 
@@ -78,25 +86,44 @@ public class CalendarOriginalService {
         return (actualCalendars.isEmpty());
     }
 
+    public void parseCalendar(String calendarDataString) {
+
+        CalendarData calendarData;
+        try {
+            calendarData = objectMapper.readValue(calendarDataString, CalendarData.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void processCalendarOriginal(String country, String year, String calendarDataActual) {
+
+        // Получение списка неархивных записей по календарю из БД
+        List<CalendarOriginal> calendarOriginalCurrentList = findCalendarActual(country, year);
+
+        // Проверим, есть ли актуальная запись по календарю
+        if (isNotExistsActualCalendar(calendarOriginalCurrentList, calendarDataActual)) {
+            // Если нету
+            // Отправляем исходные актуальные записи в архив
+            setArchiveCalendarsList(calendarOriginalCurrentList);
+            // Загружаем актуальный календарь в БД
+            CalendarOriginal actualCalendarOriginal = new CalendarOriginal(country, year, LocalDateTime.now(), RecordStatus.NEW, false, calendarDataActual);
+            calendarOriginalRepository.save(actualCalendarOriginal);
+        }
+
+        calendarFinalService.processCalendarOriginal(calendarDataActual, country); // TODO: 03.08.2024 Переделать на регистрацию события (?)
+        // Регистрируем событие на уровне приложения
+    }
+
     @Scheduled(fixedDelayString = "${app.loadCalendarInterval}")
-    public void loadAndProcessCalendar() {
+    public void loadCalendarOriginal() {
 
         String country = "ru";
         String year = "2024";
 
         String actualCalendarData = loadFromUrl(country, year);
 
-        // Получение списка неархивных записей по календарю из БД
-        List<CalendarOriginal> calendarOriginalList = findActualCalendar(country, year);
+        processCalendarOriginal(country, year, actualCalendarData);
 
-        // Проверим, есть ли актуальная запись по календарю
-        if (isNotExistsActualCalendar(calendarOriginalList, actualCalendarData)) {
-            // Если нету
-            // Отправляем исходные актуальные в архив
-            setArchiveCalendarsList(calendarOriginalList);
-            // Загружаем актуальный календарь в БД
-            CalendarOriginal actualCalendarOriginal = new CalendarOriginal(country, year, LocalDateTime.now(), CalendarOriginalStatus.NEW, false, actualCalendarData);
-            calendarOriginalRepository.save(actualCalendarOriginal);
-        }
     }
 }

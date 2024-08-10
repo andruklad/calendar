@@ -1,6 +1,6 @@
 package com.colvir.calendar.entity;
 
-public enum CalendarOriginalStatus {
+public enum RecordStatus {
 
     NEW,
 

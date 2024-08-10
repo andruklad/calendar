@@ -2,10 +2,7 @@ package com.colvir.calendar.entity;
 
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
@@ -14,7 +11,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class CalendarOriginal {
 
     @Id
@@ -29,7 +25,7 @@ public class CalendarOriginal {
     private LocalDateTime dateTime;
 
     @Enumerated(EnumType.STRING)
-    private CalendarOriginalStatus status;
+    private RecordStatus status;
 
     private Boolean isArchived;
 
@@ -37,7 +33,7 @@ public class CalendarOriginal {
     @Column(name = "data", columnDefinition = "jsonb")
     private String data;
 
-    public CalendarOriginal(String country, String year, LocalDateTime dateTime, CalendarOriginalStatus status, Boolean isArchived, String data) {
+    public CalendarOriginal(String country, String year, LocalDateTime dateTime, RecordStatus status, Boolean isArchived, String data) {
         this.country = country;
         this.year = year;
         this.dateTime = dateTime;
