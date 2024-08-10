@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,7 +63,7 @@ public class CalendarFinalService {
     // Отправка актуальных записей по месяцу в архив
     private void setArchiveCalendarsList(List<CalendarFinalMonth> calendarFinalMonthList) {
 
-        calendarFinalMonthList.stream()
+        calendarFinalMonthList
                 .forEach(calendarFinalMonth -> {
                     calendarFinalMonth.setIsArchived(true);
                     calendarFinalMonthsRepository.save(calendarFinalMonth);
