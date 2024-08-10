@@ -1,12 +1,9 @@
 package com.colvir.calendar.service;
 
 import com.colvir.calendar.config.Config;
-import com.colvir.calendar.dto.CalendarData;
 import com.colvir.calendar.entity.CalendarOriginal;
 import com.colvir.calendar.entity.RecordStatus;
 import com.colvir.calendar.repository.CalendarOriginalRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
@@ -27,8 +24,6 @@ public class CalendarOriginalService {
     private final Config config;
 
     private final String FILE_NAME = "calendar.json";
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final CalendarOriginalRepository calendarOriginalRepository;
 
@@ -55,7 +50,7 @@ public class CalendarOriginalService {
     // Отправка актуальных записей по календарю в архив
     private void setArchiveCalendarsList(List<CalendarOriginal> calendarOriginalList) {
 
-        calendarOriginalList.stream()
+        calendarOriginalList
                 .forEach(calendarOriginal -> {
                     calendarOriginal.setIsArchived(true);
                     calendarOriginalRepository.save(calendarOriginal);
@@ -84,16 +79,6 @@ public class CalendarOriginalService {
                 .filter(cl -> (new JSONObject(cl.getData())).toString().equals(actualCalendarDataJson.toString()))
                 .findFirst();
         return (actualCalendars.isEmpty());
-    }
-
-    public void parseCalendar(String calendarDataString) {
-
-        CalendarData calendarData;
-        try {
-            calendarData = objectMapper.readValue(calendarDataString, CalendarData.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private void processCalendarOriginal(String country, String year, String calendarDataActual) {

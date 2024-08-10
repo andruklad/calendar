@@ -101,11 +101,10 @@ public class CalendarFinalService {
                         LocalDateTime.now(),
                         RecordStatus.NEW,
                         false))
-                .collect(Collectors.toList());
+                .toList();
 
         // Запуск обработки по каждому месяцу
-        for (int i = 0; i < calendarFinalMonthList.size(); i++) {
-            CalendarFinalMonth calendarFinalMonth = calendarFinalMonthList.get(i);
+        for (CalendarFinalMonth calendarFinalMonth : calendarFinalMonthList) {
             processCalendarFinalMonth(calendarFinalMonth);
         }
     }
