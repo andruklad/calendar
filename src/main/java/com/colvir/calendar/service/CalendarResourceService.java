@@ -1,6 +1,7 @@
 package com.colvir.calendar.service;
 
 import com.colvir.calendar.dto.DayTypeResponse;
+import com.colvir.calendar.exception.MonthDataNotFoundException;
 import com.colvir.calendar.model.CalendarFinalMonth;
 import com.colvir.calendar.model.DayType;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
@@ -26,6 +27,12 @@ public class CalendarResourceService {
         Integer month = date.getMonthValue();
         CalendarFinalMonth calendarFinalMonth =
                 calendarFinalMonthsRepository.findFirstByCountryAndYearAndMonthAndIsArchived(country, year, month,false);
+
+        // Если не нашли - генерируем исключение
+        if (calendarFinalMonth == null) {
+            throw new MonthDataNotFoundException(String.format("Не найдены актуальные данные месяца по стране %s, году %s и месяцу %s", country, year, month));
+        }
+
         String days = calendarFinalMonth.getDays();
         // Расчет типа дня
         DayType dayType = dayTypeService.calcDayType(dayOfMonth, days);
