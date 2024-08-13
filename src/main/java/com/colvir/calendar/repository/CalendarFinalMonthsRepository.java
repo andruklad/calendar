@@ -1,6 +1,6 @@
 package com.colvir.calendar.repository;
 
-import com.colvir.calendar.entity.CalendarFinalMonth;
+import com.colvir.calendar.model.CalendarFinalMonth;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

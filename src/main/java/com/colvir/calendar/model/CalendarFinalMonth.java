@@ -1,4 +1,4 @@
-package com.colvir.calendar.entity;
+package com.colvir.calendar.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

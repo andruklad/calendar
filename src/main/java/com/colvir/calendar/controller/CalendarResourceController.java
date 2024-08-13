@@ -20,7 +20,6 @@ public class CalendarResourceController {
     // Пример формата даты: 2024-08-13
     public DayTypeResponse getDayType(@RequestParam String country, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
 
-        DayTypeRequest dayTypeRequest = new DayTypeRequest(country, date);
-        return calendarResourceService.getDayType(dayTypeRequest);
+        return calendarResourceService.getDayType(country, date);
     }
 }

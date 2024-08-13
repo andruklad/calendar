@@ -1,8 +1,8 @@
 package com.colvir.calendar.service;
 
 import com.colvir.calendar.config.Config;
-import com.colvir.calendar.entity.CalendarOriginal;
-import com.colvir.calendar.entity.RecordStatus;
+import com.colvir.calendar.model.CalendarOriginal;
+import com.colvir.calendar.model.RecordStatus;
 import com.colvir.calendar.repository.CalendarOriginalRepository;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.IOUtils;

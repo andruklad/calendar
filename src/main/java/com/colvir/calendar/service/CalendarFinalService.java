@@ -1,8 +1,8 @@
 package com.colvir.calendar.service;
 
 import com.colvir.calendar.dto.CalendarData;
-import com.colvir.calendar.entity.CalendarFinalMonth;
-import com.colvir.calendar.entity.RecordStatus;
+import com.colvir.calendar.model.CalendarFinalMonth;
+import com.colvir.calendar.model.RecordStatus;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

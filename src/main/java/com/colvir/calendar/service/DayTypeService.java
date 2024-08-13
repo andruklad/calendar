@@ -1,6 +1,6 @@
 package com.colvir.calendar.service;
 
-import com.colvir.calendar.entity.DayType;
+import com.colvir.calendar.model.DayType;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Matcher;

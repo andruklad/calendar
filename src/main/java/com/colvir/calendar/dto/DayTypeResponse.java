@@ -1,6 +1,6 @@
 package com.colvir.calendar.dto;
 
-import com.colvir.calendar.entity.DayType;
+import com.colvir.calendar.model.DayType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

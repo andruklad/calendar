@@ -1,4 +1,4 @@
-package com.colvir.calendar.entity;
+package com.colvir.calendar.model;
 
 public enum DayType {
 

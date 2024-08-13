@@ -1,4 +1,4 @@
-package com.colvir.calendar.entity;
+package com.colvir.calendar.model;
 
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;

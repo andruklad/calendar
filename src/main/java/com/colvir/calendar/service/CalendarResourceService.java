@@ -1,12 +1,13 @@
 package com.colvir.calendar.service;
 
-import com.colvir.calendar.dto.DayTypeRequest;
 import com.colvir.calendar.dto.DayTypeResponse;
-import com.colvir.calendar.entity.CalendarFinalMonth;
-import com.colvir.calendar.entity.DayType;
+import com.colvir.calendar.model.CalendarFinalMonth;
+import com.colvir.calendar.model.DayType;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -16,15 +17,15 @@ public class CalendarResourceService {
 
     private final DayTypeService dayTypeService;
 
-    public DayTypeResponse getDayType(DayTypeRequest dayTypeRequest) {
+    public DayTypeResponse getDayType(String country, LocalDate date) {
 
         // Номер дня запрашиваемой даты в месяце
-        Integer dayOfMonth = dayTypeRequest.getDate().getDayOfMonth();
+        Integer dayOfMonth = date.getDayOfMonth();
         // Получение строки дней по месяцу запрашиваемой даты
-        Integer year = dayTypeRequest.getDate().getYear();
-        Integer month = dayTypeRequest.getDate().getMonthValue();
-        CalendarFinalMonth calendarFinalMonth = calendarFinalMonthsRepository.findFirstByCountryAndYearAndMonthAndIsArchived(
-                dayTypeRequest.getCountry(), year, month,false);
+        Integer year = date.getYear();
+        Integer month = date.getMonthValue();
+        CalendarFinalMonth calendarFinalMonth =
+                calendarFinalMonthsRepository.findFirstByCountryAndYearAndMonthAndIsArchived(country, year, month,false);
         String days = calendarFinalMonth.getDays();
         // Расчет типа дня
         DayType dayType = dayTypeService.calcDayType(dayOfMonth, days);
