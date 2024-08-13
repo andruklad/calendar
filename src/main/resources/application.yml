@@ -19,4 +19,6 @@ server:
 app:
   calendar:
     url: https://xmlcalendar.ru/data
+    countryList: ru,by,kz,uz
+    yearList: 2020,2021,2022,2023,2024
   loadCalendarInterval: 50000

@@ -93,21 +93,28 @@ public class CalendarOriginalService {
             // Загружаем актуальный календарь в БД
             CalendarOriginal actualCalendarOriginal = new CalendarOriginal(country, year, LocalDateTime.now(), RecordStatus.NEW, false, calendarDataActual);
             calendarOriginalRepository.save(actualCalendarOriginal);
+            // Обработка календаря
+            calendarFinalService.processCalendarOriginal(calendarDataActual, country);
         }
 
-        calendarFinalService.processCalendarOriginal(calendarDataActual, country); // TODO: 03.08.2024 Переделать на регистрацию события (?)
-        // Регистрируем событие на уровне приложения
     }
 
     @Scheduled(fixedDelayString = "${app.loadCalendarInterval}")
-    public void loadCalendarOriginal() {
+    public void loadCalendarOriginalAll() {
 
-        String country = "ru";
-        String year = "2024";
+        String[] countryList = config.getCalendarCountryList().split(",");
+        String[] yearList = config.getCalendarYearList().split(",");
 
+        for (String country: countryList) {
+            for (String year: yearList) {
+                loadCalendarOriginalByCountryAndYear(country, year);
+            }
+        }
+    }
+
+    private void loadCalendarOriginalByCountryAndYear(String country, String year) {
         String actualCalendarData = loadFromUrl(country, year);
 
         processCalendarOriginal(country, year, actualCalendarData);
-
     }
 }
