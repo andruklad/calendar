@@ -8,4 +8,6 @@ import java.util.List;
 public interface CalendarFinalMonthsRepository extends JpaRepository<CalendarFinalMonth, Integer> {
 
     List<CalendarFinalMonth> findAllByCountryAndYearAndMonthAndIsArchived(String country, Integer year, Integer month, Boolean isArchived);
+
+    CalendarFinalMonth findFirstByCountryAndYearAndMonthAndIsArchived(String country, Integer year, Integer month, Boolean isArchived);
 }

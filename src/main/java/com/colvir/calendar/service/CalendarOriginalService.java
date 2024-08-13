@@ -43,8 +43,7 @@ public class CalendarOriginalService {
 
     private List<CalendarOriginal> findCalendarActual(String country, String year) {
 
-        List<CalendarOriginal> calendarOriginalList = calendarOriginalRepository.findAllByCountryAndYearAndIsArchived(country, year, false);
-        return calendarOriginalList;
+        return calendarOriginalRepository.findAllByCountryAndYearAndIsArchived(country, year, false);
     }
 
     // Отправка актуальных записей по календарю в архив
