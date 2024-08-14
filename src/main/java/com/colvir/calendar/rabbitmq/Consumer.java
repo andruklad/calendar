@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 @RequiredArgsConstructor
 public class Consumer {
 
-    private Logger logger = Logger.getLogger(Consumer.class.getName());
+    private final Logger logger = Logger.getLogger(Consumer.class.getName());
 
     private final RabbitConfig rabbitConfig;
 

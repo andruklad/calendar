@@ -114,9 +114,7 @@ public class RabbitConfig {
     // Соединение с брокером RabbitMQ
     @Bean
     public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory connectionFactory =
-                new CachingConnectionFactory("localhost");
-        return connectionFactory;
+        return new CachingConnectionFactory("localhost");
     }
 
     // Шаблон для отправки сообщений
