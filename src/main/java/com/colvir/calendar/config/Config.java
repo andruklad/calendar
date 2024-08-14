@@ -17,7 +17,6 @@ public class Config {
     public Config(@Value("${app.calendar.url}") String calendarUrl,
                   @Value("${app.calendar.countryList}") String calendarCountryList,
                   @Value("${app.calendar.yearList}") String calendarYearList) {
-
         this.calendarUrl = calendarUrl;
         this.calendarCountryList = calendarCountryList;
         this.calendarYearList = calendarYearList;

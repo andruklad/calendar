@@ -3,12 +3,14 @@ package com.colvir.calendar.service;
 import com.colvir.calendar.dto.CalendarData;
 import com.colvir.calendar.model.CalendarFinalMonth;
 import com.colvir.calendar.model.RecordStatus;
+import com.colvir.calendar.rabbitmq.Producer;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +22,8 @@ public class CalendarFinalService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final CalendarFinalMonthsRepository calendarFinalMonthsRepository;
+
+    private final Producer producer;
 
     private CalendarData parseCalendarOriginal(String calendarDataString) {
 
@@ -73,17 +77,28 @@ public class CalendarFinalService {
     // Обработка актуального месяца по календарю
     private void processCalendarFinalMonth(CalendarFinalMonth calendarFinalMonthActual) {
 
-        // Получение списка неархивных записей по месяцу из БД
-        List<CalendarFinalMonth> calendarFinalMonthCurrentList = findFinalMonthsActual(calendarFinalMonthActual);
+        try {
+            // Получение списка неархивных записей по месяцу из БД
+            List<CalendarFinalMonth> calendarFinalMonthCurrentList = findFinalMonthsActual(calendarFinalMonthActual);
 
-        // Проверим, есть ли актуальная запись по месяцу
-        if (isNotExistsActualFinalMonths(calendarFinalMonthCurrentList, calendarFinalMonthActual)) {
-            // Если нету
-            // Отправляем исходные актуальные записи в архив
-            setArchiveCalendarsList(calendarFinalMonthCurrentList);
-            // Загружаем актуальный месяц в БД
-            calendarFinalMonthsRepository.save(calendarFinalMonthActual);
-            // TODO: 10.08.2024 Отправка уведомления в брокер сообщений об обновлении данных по месяцу
+            // Проверим, есть ли актуальная запись по месяцу
+            if (isNotExistsActualFinalMonths(calendarFinalMonthCurrentList, calendarFinalMonthActual)) {
+                // Если нету
+                // Отправляем исходные актуальные записи в архив
+                setArchiveCalendarsList(calendarFinalMonthCurrentList);
+                // Загружаем актуальный месяц в БД
+                calendarFinalMonthsRepository.save(calendarFinalMonthActual);
+                // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по месяцам итогового календаря
+                producer.sendMessage(producer.getRabbitConfig().getRoutingFinalMonthsInfoKey(),
+                        String.format("Calendar months loaded. Country: %s, year: %s. month: %s",
+                                calendarFinalMonthActual.getCountry(), calendarFinalMonthActual.getYear(), calendarFinalMonthActual.getMonth()));
+                throw new RuntimeException("Test error load month");
+            }
+        } catch (RuntimeException e) {
+            // Отправляем сообщение в брокер сообщений, очередь с сообщениями по ошибкам по месяцам итогового календаря
+            producer.sendMessage(producer.getRabbitConfig().getRoutingFinalMonthsErrorKey(),
+                    String.format("Calendar month load error. Country: %s, year: %s. month: %s. Error: %s",
+                            calendarFinalMonthActual.getCountry(), calendarFinalMonthActual.getYear(), calendarFinalMonthActual.getMonth(), e.getMessage()));
         }
     }
 

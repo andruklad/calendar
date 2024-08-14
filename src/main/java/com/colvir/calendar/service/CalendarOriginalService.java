@@ -3,6 +3,7 @@ package com.colvir.calendar.service;
 import com.colvir.calendar.config.Config;
 import com.colvir.calendar.model.CalendarOriginal;
 import com.colvir.calendar.model.RecordStatus;
+import com.colvir.calendar.rabbitmq.Producer;
 import com.colvir.calendar.repository.CalendarOriginalRepository;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.IOUtils;
@@ -29,14 +30,18 @@ public class CalendarOriginalService {
 
     private final CalendarFinalService calendarFinalService;
 
+    private final Producer producer;
+
     private String loadFromUrl(String country, String year) {
 
         String calendarUrl = String.format("%s/%s/%s/%s", config.getCalendarUrl(), country, year, FILE_NAME);
-        String calendar;
+        String calendar = null;
         try {
             calendar = IOUtils.toString(URI.create(calendarUrl), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // Отправляем сообщение в брокер сообщений, очередь с ошибками по исходному календарю
+            producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalErrorKey(),
+                    String.format("Error loading calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
         }
         return calendar;
     }
@@ -93,10 +98,12 @@ public class CalendarOriginalService {
             // Загружаем актуальный календарь в БД
             CalendarOriginal actualCalendarOriginal = new CalendarOriginal(country, year, LocalDateTime.now(), RecordStatus.NEW, false, calendarDataActual);
             calendarOriginalRepository.save(actualCalendarOriginal);
+            // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по исходному календарю
+            producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalInfoKey(),
+                    String.format("Calendar loaded. Country: %s, year: %s", country, year));
             // Обработка календаря
             calendarFinalService.processCalendarOriginal(calendarDataActual, country);
         }
-
     }
 
     @Scheduled(fixedDelayString = "${app.loadCalendarInterval}")
@@ -113,8 +120,10 @@ public class CalendarOriginalService {
     }
 
     private void loadCalendarOriginalByCountryAndYear(String country, String year) {
-        String actualCalendarData = loadFromUrl(country, year);
 
-        processCalendarOriginal(country, year, actualCalendarData);
+        String actualCalendarData = loadFromUrl(country, year);
+        if (actualCalendarData != null) {
+            processCalendarOriginal(country, year, actualCalendarData);
+        }
     }
 }

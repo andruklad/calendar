@@ -19,6 +19,22 @@ server:
 app:
   calendar:
     url: https://xmlcalendar.ru/data
-    countryList: ru,by,kz,uz
-    yearList: 2020,2021,2022,2023,2024
+#    url: https://xmlcalendar.ru/datatestfail
+    countryList: ru
+#    countryList: ru,by,kz,uz
+    yearList: 2024
+#    yearList: 2020,2021,2022,2023,2024
   loadCalendarInterval: 50000
+
+rabbitmq:
+  exchange: calendar_exchange
+  routing:
+    originalInfoKey: original_info_routing_key
+    originalErrorKey: original_error_routing_key
+    finalMonthsInfoKey: final_months_info_key
+    finalMonthsErrorKey: final_months_error_key
+  queue:
+    originalInfo: original_info
+    originalError: original_error
+    finalMonthsInfo: final_months_info
+    finalMonthsError: final_month_error
