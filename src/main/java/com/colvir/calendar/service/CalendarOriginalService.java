@@ -60,6 +60,13 @@ public class CalendarOriginalService {
                 });
     }
 
+    // Пометить запись как обработанную
+    private void setProcessedCalendarOriginal(CalendarOriginal calendarOriginal) {
+
+        calendarOriginal.setStatus(RecordStatus.PROCESSED);
+        calendarOriginalRepository.save(calendarOriginal);
+    }
+
     private boolean isNotExistsActualCalendar(List<CalendarOriginal> calendarOriginalList, String actualCalendarData) {
 
         // Если список пустой, то и нечего проверять - актуальный календарь отсутствует
@@ -86,22 +93,38 @@ public class CalendarOriginalService {
 
     private void processCalendarOriginal(String country, String year, String calendarDataActual) {
 
-        // Получение списка неархивных записей по календарю из БД
-        List<CalendarOriginal> calendarOriginalCurrentList = findCalendarActual(country, year);
+        try {
+            // Получение списка неархивных записей по календарю из БД
+            List<CalendarOriginal> calendarOriginalCurrentList = findCalendarActual(country, year);
 
-        // Проверим, есть ли актуальная запись по календарю
-        if (isNotExistsActualCalendar(calendarOriginalCurrentList, calendarDataActual)) {
-            // Если нету
-            // Отправляем исходные актуальные записи в архив
-            setArchiveCalendarsList(calendarOriginalCurrentList);
-            // Загружаем актуальный календарь в БД
-            CalendarOriginal actualCalendarOriginal = new CalendarOriginal(country, year, LocalDateTime.now(), RecordStatus.NEW, false, calendarDataActual);
-            calendarOriginalRepository.save(actualCalendarOriginal);
-            // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по исходному календарю
-            producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalInfoKey(),
-                    String.format("Calendar loaded. Country: %s, year: %s", country, year));
-            // Обработка календаря
-            calendarFinalService.processCalendarOriginal(calendarDataActual, country);
+            // Проверим, есть ли актуальная запись по календарю
+            if (isNotExistsActualCalendar(calendarOriginalCurrentList, calendarDataActual)) {
+                // Если нету
+                // Отправляем исходные актуальные записи в архив
+                setArchiveCalendarsList(calendarOriginalCurrentList);
+                // Загружаем актуальный календарь в БД
+                CalendarOriginal actualCalendarOriginal = new CalendarOriginal(country, year, LocalDateTime.now(), RecordStatus.NEW, false, calendarDataActual);
+                calendarOriginalRepository.save(actualCalendarOriginal);
+                // Обработка календаря
+                calendarFinalService.processCalendarOriginal(calendarDataActual, country);
+                // Пометить запись как обработанную
+                setProcessedCalendarOriginal(actualCalendarOriginal);
+                // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по исходному календарю
+                producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalInfoKey(),
+                        String.format("Calendar processed. Country: %s, year: %s", country, year));
+            }
+        } catch (RuntimeException e) {
+            // Отправляем сообщение в брокер сообщений, очередь с ошибками по исходному календарю
+            producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalErrorKey(),
+                    String.format("Error processing calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
+        }
+    }
+
+    private void loadCalendarOriginalByCountryAndYear(String country, String year) {
+
+        String actualCalendarData = loadFromUrl(country, year);
+        if (actualCalendarData != null) {
+            processCalendarOriginal(country, year, actualCalendarData);
         }
     }
 
@@ -114,14 +137,6 @@ public class CalendarOriginalService {
             for (String year: yearList) {
                 loadCalendarOriginalByCountryAndYear(country, year);
             }
-        }
-    }
-
-    private void loadCalendarOriginalByCountryAndYear(String country, String year) {
-
-        String actualCalendarData = loadFromUrl(country, year);
-        if (actualCalendarData != null) {
-            processCalendarOriginal(country, year, actualCalendarData);
         }
     }
 }
