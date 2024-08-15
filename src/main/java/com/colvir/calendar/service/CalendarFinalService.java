@@ -91,7 +91,6 @@ public class CalendarFinalService {
                 producer.sendMessage(producer.getRabbitConfig().getRoutingFinalMonthsInfoKey(),
                         String.format("Calendar months loaded. Country: %s, year: %s. month: %s",
                                 calendarFinalMonthActual.getCountry(), calendarFinalMonthActual.getYear(), calendarFinalMonthActual.getMonth()));
-                throw new RuntimeException("Test error load month");
             }
         } catch (RuntimeException e) {
             // Отправляем сообщение в брокер сообщений, очередь с сообщениями по ошибкам по месяцам итогового календаря
