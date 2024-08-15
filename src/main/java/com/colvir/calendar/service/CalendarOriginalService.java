@@ -8,7 +8,6 @@ import com.colvir.calendar.repository.CalendarOriginalRepository;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -106,7 +105,6 @@ public class CalendarOriginalService {
         }
     }
 
-    @Scheduled(fixedDelayString = "${app.loadCalendarInterval}")
     public void loadCalendarOriginalAll() {
 
         String[] countryList = config.getCalendarCountryList().split(",");
