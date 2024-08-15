@@ -11,12 +11,16 @@ create table public.calendar_original
     is_archived boolean,
     status      varchar(255)
         constraint calendar_original_status_check
-            check ((status)::text = ANY ((ARRAY ['NEW'::character varying, 'PROCESSED'::character varying])::text[])),
+            check ((status)::text = ANY
+                   (ARRAY [('NEW'::character varying)::text, ('PROCESSED'::character varying)::text])),
     year        varchar(255)
 );
 
 alter table public.calendar_original
     owner to postgres;
+
+create index calendar_original_country_year_is_archived_index
+    on public.calendar_original (country, year, is_archived);
 
 
 create sequence public.sequence_calendar_original_id;
@@ -35,12 +39,16 @@ create table public.calendar_final_month
     month       integer,
     status      varchar(255)
         constraint calendar_final_month_status_check
-            check ((status)::text = ANY ((ARRAY ['NEW'::character varying, 'PROCESSED'::character varying])::text[])),
+            check ((status)::text = ANY
+                   (ARRAY [('NEW'::character varying)::text, ('PROCESSED'::character varying)::text])),
     year        integer
 );
 
 alter table public.calendar_final_month
     owner to postgres;
+
+create index calendar_final_month_country_year_month_is_archived_index
+    on public.calendar_final_month (country, year, month, is_archived);
 
 
 create sequence public.sequence_calendar_final_month_id;
