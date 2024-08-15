@@ -12,6 +12,9 @@ spring:
     hibernate:
       ddl-auto: update
 
+  liquibase:
+    change-log: classpath:liquibase/changelog-master.yaml
+
 server:
   servlet:
     context-path: /api
