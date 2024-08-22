@@ -28,18 +28,14 @@ public class CalendarFinalMonth {
 
     private LocalDateTime dateTime;
 
-    @Enumerated(EnumType.STRING)
-    private RecordStatus status;
-
     private Boolean isArchived;
 
-    public CalendarFinalMonth(String country, Integer year, Integer month, String days, LocalDateTime dateTime, RecordStatus status, Boolean isArchived) {
+    public CalendarFinalMonth(String country, Integer year, Integer month, String days, LocalDateTime dateTime, Boolean isArchived) {
         this.country = country;
         this.year = year;
         this.month = month;
         this.days = days;
         this.dateTime = dateTime;
-        this.status = status;
         this.isArchived = isArchived;
     }
 }

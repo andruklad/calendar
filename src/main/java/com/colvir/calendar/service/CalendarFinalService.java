@@ -2,7 +2,6 @@ package com.colvir.calendar.service;
 
 import com.colvir.calendar.dto.CalendarData;
 import com.colvir.calendar.model.CalendarFinalMonth;
-import com.colvir.calendar.model.RecordStatus;
 import com.colvir.calendar.rabbitmq.Producer;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -111,7 +110,6 @@ public class CalendarFinalService {
                         calendarDataMonth.getMonth(),
                         calendarDataMonth.getDays(),
                         LocalDateTime.now(),
-                        RecordStatus.NEW,
                         false))
                 .toList();
 

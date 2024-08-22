@@ -1,24 +1,24 @@
 package com.colvir.calendar.service;
 
 import com.colvir.calendar.config.Config;
+import com.colvir.calendar.dto.CalendarLoadResult;
+import com.colvir.calendar.dto.LoadResult;
 import com.colvir.calendar.model.CalendarOriginal;
 import com.colvir.calendar.model.RecordStatus;
 import com.colvir.calendar.rabbitmq.Producer;
 import com.colvir.calendar.repository.CalendarOriginalRepository;
-import lombok.AllArgsConstructor;
-import org.apache.commons.io.IOUtils;
+import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CalendarOriginalService {
 
     private final Config config;
@@ -31,18 +31,31 @@ public class CalendarOriginalService {
 
     private final Producer producer;
 
+    private final LoadSourceDataService loadSourceDataService;
+
+    // TODO: 21.08.2024 Переделать
     private String loadFromUrl(String country, String year) {
 
-        String calendarUrl = String.format("%s/%s/%s/%s", config.getCalendarUrl(), country, year, FILE_NAME);
-        String calendar = null;
+        String result = null;
         try {
-            calendar = IOUtils.toString(URI.create(calendarUrl), StandardCharsets.UTF_8);
+            result = loadSourceDataService.loadFromUrl(country, year);
         } catch (IOException e) {
             // Отправляем сообщение в брокер сообщений, очередь с ошибками по исходному календарю
             producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalErrorKey(),
                     String.format("Error loading calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
         }
-        return calendar;
+        return result;
+
+//        String result = null;
+//        String calendarUrl = String.format("%s/%s/%s/%s", config.getCalendarUrl(), country, year, FILE_NAME);
+//        try {
+//            result = IOUtils.toString(URI.create(calendarUrl), StandardCharsets.UTF_8);
+//        } catch (IOException e) {
+//            // Отправляем сообщение в брокер сообщений, очередь с ошибками по исходному календарю
+//            producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalErrorKey(),
+//                    String.format("Error loading calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
+//        }
+//        return result;
     }
 
     private List<CalendarOriginal> findCalendarActual(String country, String year) {
@@ -53,11 +66,13 @@ public class CalendarOriginalService {
     // Отправка актуальных записей по календарю в архив
     private void setArchiveCalendarsList(List<CalendarOriginal> calendarOriginalList) {
 
-        calendarOriginalList
-                .forEach(calendarOriginal -> {
-                    calendarOriginal.setIsArchived(true);
-                    calendarOriginalRepository.save(calendarOriginal);
-                });
+        if (calendarOriginalList != null) {
+            calendarOriginalList
+                    .forEach(calendarOriginal -> {
+                        calendarOriginal.setIsArchived(true);
+                        calendarOriginalRepository.save(calendarOriginal);
+                    });
+        }
     }
 
     // Пометить запись как обработанную
@@ -69,8 +84,8 @@ public class CalendarOriginalService {
 
     private boolean isNotExistsActualCalendar(List<CalendarOriginal> calendarOriginalList, String actualCalendarData) {
 
-        // Если список пустой, то и нечего проверять - актуальный календарь отсутствует
-        if (calendarOriginalList.isEmpty()) {
+        // Если список отсутствует или пустой, то и нечего проверять - актуальный календарь отсутствует
+        if (calendarOriginalList == null || calendarOriginalList.isEmpty()) {
             return true;
         }
         JSONObject actualCalendarDataJson = new JSONObject(actualCalendarData);
@@ -91,8 +106,9 @@ public class CalendarOriginalService {
         return (actualCalendars.isEmpty());
     }
 
-    private void processCalendarOriginal(String country, String year, String calendarDataActual) {
+    private LoadResult processCalendarOriginal(String country, String year, String calendarDataActual) {
 
+        LoadResult result;
         try {
             // Получение списка неархивных записей по календарю из БД
             List<CalendarOriginal> calendarOriginalCurrentList = findCalendarActual(country, year);
@@ -113,30 +129,51 @@ public class CalendarOriginalService {
                 producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalInfoKey(),
                         String.format("Calendar processed. Country: %s, year: %s", country, year));
             }
+            result = LoadResult.SUCCESS;
         } catch (RuntimeException e) {
+            result = LoadResult.PROCESS_FAIL;
             // Отправляем сообщение в брокер сообщений, очередь с ошибками по исходному календарю
             producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalErrorKey(),
                     String.format("Error processing calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
         }
+        return result;
     }
 
-    private void loadCalendarOriginalByCountryAndYear(String country, String year) {
+    private LoadResult loadCalendarOriginalByCountryAndYear(String country, String year) {
 
         String actualCalendarData = loadFromUrl(country, year);
-        if (actualCalendarData != null) {
-            processCalendarOriginal(country, year, actualCalendarData);
-        }
+        if (actualCalendarData != null)
+            return processCalendarOriginal(country, year, actualCalendarData);
+        else
+            return LoadResult.LOAD_FAIL;
     }
 
-    public void loadCalendarOriginalAll() {
+    // TODO: 21.08.2024 Заменить на loadCalendarOriginalAllWithResult
+//    public void loadCalendarOriginalAll() {
+//
+//        String[] countryList = config.getCalendarCountryList().split(",");
+//        String[] yearList = config.getCalendarYearList().split(",");
+//
+//        for (String country: countryList) {
+//            for (String year: yearList) {
+//                loadCalendarOriginalByCountryAndYear(country, year);
+//            }
+//        }
+//    }
 
+    public List<CalendarLoadResult> loadCalendarOriginalAll() {
+
+        List<CalendarLoadResult> calendarLoadResultList = new ArrayList<>();
         String[] countryList = config.getCalendarCountryList().split(",");
         String[] yearList = config.getCalendarYearList().split(",");
 
         for (String country: countryList) {
             for (String year: yearList) {
-                loadCalendarOriginalByCountryAndYear(country, year);
+                LoadResult loadResult = loadCalendarOriginalByCountryAndYear(country, year);
+                CalendarLoadResult calendarLoadResult = new CalendarLoadResult(country, year, loadResult);
+                calendarLoadResultList.add(calendarLoadResult);
             }
         }
+        return calendarLoadResultList;
     }
 }

@@ -37,10 +37,6 @@ create table public.calendar_final_month
     days        varchar(255),
     is_archived boolean,
     month       integer,
-    status      varchar(255)
-        constraint calendar_final_month_status_check
-            check ((status)::text = ANY
-                   (ARRAY [('NEW'::character varying)::text, ('PROCESSED'::character varying)::text])),
     year        integer
 );
 
