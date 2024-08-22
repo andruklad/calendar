@@ -23,8 +23,6 @@ public class CalendarOriginalService {
 
     private final Config config;
 
-    private final String FILE_NAME = "calendar.json";
-
     private final CalendarOriginalRepository calendarOriginalRepository;
 
     private final CalendarFinalService calendarFinalService;
