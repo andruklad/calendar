@@ -4,8 +4,10 @@ import com.colvir.calendar.config.Config;
 import com.colvir.calendar.config.RabbitConfig;
 import com.colvir.calendar.dto.CalendarLoadResult;
 import com.colvir.calendar.dto.LoadResult;
+import com.colvir.calendar.model.RecordStatus;
 import com.colvir.calendar.rabbitmq.Producer;
 import com.colvir.calendar.repository.CalendarOriginalRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +77,20 @@ public class CalendarOriginalServiceTest {
 
         verify(calendarOriginalRepository, times(2)).save(any());
         verify(calendarOriginalRepository).findAllByCountryAndYearAndIsArchived("ru", "2024", false);
+        verifyNoMoreInteractions(calendarOriginalRepository);
+    }
+
+    @Test
+    void processCalendarOriginalByNewStatus_success() {
+
+        //Подготовка входных данных
+
+        //Подготовка ожидаемого результата
+
+        //Начало теста
+        Assertions.assertDoesNotThrow(() -> calendarOriginalService.processCalendarOriginalByNewStatus());
+
+        verify(calendarOriginalRepository).findAllByCountryAndYearAndIsArchivedAndStatus(any(), any(), eq(false), eq(RecordStatus.NEW));
         verifyNoMoreInteractions(calendarOriginalRepository);
     }
 }

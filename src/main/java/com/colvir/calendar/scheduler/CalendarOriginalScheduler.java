@@ -11,8 +11,14 @@ public class CalendarOriginalScheduler {
 
     private final CalendarOriginalService calendarOriginalService;
 
-    @Scheduled(fixedDelayString = "${app.loadCalendarInterval}")
+    // TODO: 21.08.2024 Расскомментировать 
+//    @Scheduled(fixedDelayString = "${app.loadCalendarInterval}")
     public void loadCalendarOriginalAll() {
         calendarOriginalService.loadCalendarOriginalAll();
+    }
+
+    @Scheduled(initialDelay = 10*60*1000 /*10 min*/, fixedDelayString = "${app.loadCalendarInterval}")
+    public void processCalendarOriginalByNewStatus() {
+        calendarOriginalService.processCalendarOriginalByNewStatus();
     }
 }

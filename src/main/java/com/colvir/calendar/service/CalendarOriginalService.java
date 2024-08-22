@@ -119,10 +119,7 @@ public class CalendarOriginalService {
                 // Загружаем актуальный календарь в БД
                 CalendarOriginal actualCalendarOriginal = new CalendarOriginal(country, year, LocalDateTime.now(), RecordStatus.NEW, false, calendarDataActual);
                 calendarOriginalRepository.save(actualCalendarOriginal);
-                // Обработка календаря
-                calendarFinalService.processCalendarOriginal(calendarDataActual, country);
-                // Пометить запись как обработанную
-                setProcessedCalendarOriginal(actualCalendarOriginal);
+                processCalendarOriginalToFinal(country, calendarDataActual, actualCalendarOriginal);
                 // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по исходному календарю
                 producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalInfoKey(),
                         String.format("Calendar processed. Country: %s, year: %s", country, year));
@@ -135,6 +132,29 @@ public class CalendarOriginalService {
                     String.format("Error processing calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
         }
         return result;
+    }
+
+    private void processCalendarOriginalToFinal(String country, String calendarDataActual, CalendarOriginal actualCalendarOriginal) {
+
+        // Обработка календаря
+        calendarFinalService.processCalendarOriginal(calendarDataActual, country);
+        // Пометить запись как обработанную
+        setProcessedCalendarOriginal(actualCalendarOriginal);
+    }
+
+    public void processCalendarOriginalByNewStatus() {
+
+        String[] countryList = config.getCalendarCountryList().split(",");
+        String[] yearList = config.getCalendarYearList().split(",");
+        for (String country: countryList) {
+            for (String year: yearList) {
+                // Получение неархивных необработанных записей
+                List<CalendarOriginal> calendarOriginalList = calendarOriginalRepository.findAllByCountryAndYearAndIsArchivedAndStatus(country, year, false, RecordStatus.NEW);
+                for (CalendarOriginal calendarOriginal: calendarOriginalList) {
+                    processCalendarOriginalToFinal(country, calendarOriginal.getData(), calendarOriginal);
+                }
+            }
+        }
     }
 
     private LoadResult loadCalendarOriginalByCountryAndYear(String country, String year) {
