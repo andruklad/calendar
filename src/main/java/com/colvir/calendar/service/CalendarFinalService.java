@@ -1,5 +1,6 @@
 package com.colvir.calendar.service;
 
+import com.colvir.calendar.config.RabbitConfig;
 import com.colvir.calendar.dto.CalendarData;
 import com.colvir.calendar.model.CalendarFinalMonth;
 import com.colvir.calendar.model.CalendarFinalTransition;
@@ -18,6 +19,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class CalendarFinalService {
+
+    private final RabbitConfig rabbitConfig;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -90,21 +93,24 @@ public class CalendarFinalService {
                 // Загружаем актуальный месяц в БД
                 calendarFinalMonthsRepository.save(calendarFinalMonthActual);
                 // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по месяцам итогового календаря
-                producer.sendMessage(producer.getRabbitConfig().getRoutingFinalInfoKey(),
+                producer.sendMessage(rabbitConfig.getRoutingFinalInfoKey(),
                         String.format("Calendar months loaded. Country: %s, year: %s. month: %s",
                                 calendarFinalMonthActual.getCountry(), calendarFinalMonthActual.getYear(), calendarFinalMonthActual.getMonth()));
             }
         } catch (RuntimeException e) {
             // Отправляем сообщение в брокер сообщений, очередь с сообщениями по ошибкам по месяцам итогового календаря
-            producer.sendMessage(producer.getRabbitConfig().getRoutingFinalErrorKey(),
+            producer.sendMessage(rabbitConfig.getRoutingFinalErrorKey(),
                     String.format("Calendar month load error. Country: %s, year: %s. month: %s. Error: %s",
                             calendarFinalMonthActual.getCountry(), calendarFinalMonthActual.getYear(), calendarFinalMonthActual.getMonth(), e.getMessage()));
         }
     }
 
-    private List<CalendarFinalTransition> findFinalTransitionsActual(String country, Integer year) {
+    private List<CalendarFinalTransition> findFinalTransitionsActual(CalendarFinalTransition calendarFinalTransition) {
 
-        return calendarFinalTransitionsRepository.findAllByCountryAndYearAndIsArchived(country, year,false);
+        return calendarFinalTransitionsRepository.findAllByCountryAndYearAndIsArchived(
+                calendarFinalTransition.getCountry(),
+                calendarFinalTransition.getYear(),
+                false);
     }
 
     // Обработка актуальных переносов по календарю
@@ -116,7 +122,7 @@ public class CalendarFinalService {
         try {
             // Получение списка неархивных актуальных записей по переносам из БД
             List<CalendarFinalTransition> calendarFinalTransitionDatabaseList =
-                    findFinalTransitionsActual(calendarFinalTransitionFirst.getCountry(), calendarFinalTransitionFirst.getYear());
+                    findFinalTransitionsActual(calendarFinalTransitionFirst);
 
             // Цикл по актуальным записям первоисточника
             for (CalendarFinalTransition calendarFinalTransitionActual : calendarFinalTransitionActualList) {
@@ -156,12 +162,12 @@ public class CalendarFinalService {
                         calendarFinalTransitionsRepository.save(calendarFinalTransitionDatabase);
                     });
             // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по переносам итогового календаря
-            producer.sendMessage(producer.getRabbitConfig().getRoutingFinalInfoKey(),
+            producer.sendMessage(rabbitConfig.getRoutingFinalInfoKey(),
                     String.format("Calendar transitions loaded. Country: %s, year: %s.",
                             calendarFinalTransitionFirst.getCountry(), calendarFinalTransitionFirst.getYear()));
         } catch (RuntimeException e) {
             // Отправляем сообщение в брокер сообщений, очередь с сообщениями по ошибкам по переносам итогового календаря
-            producer.sendMessage(producer.getRabbitConfig().getRoutingFinalErrorKey(),
+            producer.sendMessage(rabbitConfig.getRoutingFinalErrorKey(),
                     String.format("Calendar transitions load error. Country: %s, year: %s.",
                             calendarFinalTransitionFirst.getCountry(), calendarFinalTransitionFirst.getYear()));
         }

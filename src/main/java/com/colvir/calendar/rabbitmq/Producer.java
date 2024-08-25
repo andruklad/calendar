@@ -19,9 +19,4 @@ public class Producer {
 
         rabbitTemplate.convertAndSend(rabbitConfig.getExchange(), routingKey, String.format("%s %s", LocalDateTime.now(), text));
     }
-
-    // TODO: 25.08.2024 Избавиться от этого
-    public RabbitConfig getRabbitConfig() {
-        return rabbitConfig;
-    }
 }

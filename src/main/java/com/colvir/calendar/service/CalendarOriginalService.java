@@ -1,6 +1,7 @@
 package com.colvir.calendar.service;
 
 import com.colvir.calendar.config.Config;
+import com.colvir.calendar.config.RabbitConfig;
 import com.colvir.calendar.dto.CalendarLoadResult;
 import com.colvir.calendar.dto.LoadResult;
 import com.colvir.calendar.model.CalendarOriginal;
@@ -23,6 +24,8 @@ public class CalendarOriginalService {
 
     private final Config config;
 
+    private final RabbitConfig rabbitConfig;
+
     private final CalendarOriginalRepository calendarOriginalRepository;
 
     private final CalendarFinalService calendarFinalService;
@@ -39,21 +42,10 @@ public class CalendarOriginalService {
             result = loadSourceDataService.loadFromUrl(country, year);
         } catch (IOException e) {
             // Отправляем сообщение в брокер сообщений, очередь с ошибками по исходному календарю
-            producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalErrorKey(),
+            producer.sendMessage(rabbitConfig.getRoutingOriginalErrorKey(),
                     String.format("Error loading calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
         }
         return result;
-
-//        String result = null;
-//        String calendarUrl = String.format("%s/%s/%s/%s", config.getCalendarUrl(), country, year, FILE_NAME);
-//        try {
-//            result = IOUtils.toString(URI.create(calendarUrl), StandardCharsets.UTF_8);
-//        } catch (IOException e) {
-//            // Отправляем сообщение в брокер сообщений, очередь с ошибками по исходному календарю
-//            producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalErrorKey(),
-//                    String.format("Error loading calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
-//        }
-//        return result;
     }
 
     private List<CalendarOriginal> findCalendarActual(String country, String year) {
@@ -121,14 +113,14 @@ public class CalendarOriginalService {
                 calendarOriginalRepository.save(actualCalendarOriginal);
                 processCalendarOriginalToFinal(country, calendarDataActual, actualCalendarOriginal);
                 // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по исходному календарю
-                producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalInfoKey(),
+                producer.sendMessage(rabbitConfig.getRoutingOriginalInfoKey(),
                         String.format("Calendar processed. Country: %s, year: %s", country, year));
             }
             result = LoadResult.SUCCESS;
         } catch (RuntimeException e) {
             result = LoadResult.PROCESS_FAIL;
             // Отправляем сообщение в брокер сообщений, очередь с ошибками по исходному календарю
-            producer.sendMessage(producer.getRabbitConfig().getRoutingOriginalErrorKey(),
+            producer.sendMessage(rabbitConfig.getRoutingOriginalErrorKey(),
                     String.format("Error processing calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
         }
         return result;
@@ -165,19 +157,6 @@ public class CalendarOriginalService {
         else
             return LoadResult.LOAD_FAIL;
     }
-
-    // TODO: 21.08.2024 Заменить на loadCalendarOriginalAllWithResult
-//    public void loadCalendarOriginalAll() {
-//
-//        String[] countryList = config.getCalendarCountryList().split(",");
-//        String[] yearList = config.getCalendarYearList().split(",");
-//
-//        for (String country: countryList) {
-//            for (String year: yearList) {
-//                loadCalendarOriginalByCountryAndYear(country, year);
-//            }
-//        }
-//    }
 
     public List<CalendarLoadResult> loadCalendarOriginalAll() {
 
