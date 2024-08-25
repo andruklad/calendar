@@ -1,14 +1,18 @@
 package com.colvir.calendar.service;
 
 import com.colvir.calendar.dto.DayTypeResponse;
+import com.colvir.calendar.dto.TransitionResponse;
 import com.colvir.calendar.exception.MonthDataNotFoundException;
 import com.colvir.calendar.model.CalendarFinalMonth;
+import com.colvir.calendar.model.CalendarFinalTransition;
 import com.colvir.calendar.model.DayType;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
+import com.colvir.calendar.repository.CalendarFinalTransitionsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +21,8 @@ public class CalendarResourceService {
     private final CalendarFinalMonthsRepository calendarFinalMonthsRepository;
 
     private final DayTypeService dayTypeService;
+
+    private final CalendarFinalTransitionsRepository calendarFinalTransitionsRepository;
 
     public DayTypeResponse getDayType(String country, LocalDate date) {
 
@@ -38,5 +44,14 @@ public class CalendarResourceService {
         DayType dayType = dayTypeService.calcDayType(dayOfMonth, days);
 
         return new DayTypeResponse(dayType.getValue(), dayType);
+    }
+
+    public List<TransitionResponse> getTransitions(String country, Integer year) {
+
+        List<CalendarFinalTransition> calendarFinalTransitionList = calendarFinalTransitionsRepository.findAllByCountryAndYearAndIsArchived(country, year, false);
+        List<TransitionResponse> transitionResponseList = calendarFinalTransitionList.stream()
+                .map(calendarFinalTransition -> (new TransitionResponse(calendarFinalTransition.getDayFrom(), calendarFinalTransition.getDayTo())))
+                .toList();
+        return transitionResponseList;
     }
 }
