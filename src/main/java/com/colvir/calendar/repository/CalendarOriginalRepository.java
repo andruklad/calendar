@@ -8,7 +8,9 @@ import java.util.List;
 
 public interface CalendarOriginalRepository extends JpaRepository<CalendarOriginal, Integer> {
 
-    List<CalendarOriginal> findAllByCountryAndYearAndIsArchived(String country, String year, boolean isArchived);
+    List<CalendarOriginal> findAllByCountryAndYearAndIsArchived(String country, Integer year, boolean isArchived);
 
-    List<CalendarOriginal> findAllByCountryAndYearAndIsArchivedAndStatus(String country, String year, boolean isArchived, RecordStatus status);
+    List<CalendarOriginal> findAllByCountryAndYearAndIsArchivedAndStatus(String country, Integer year, boolean isArchived, RecordStatus status);
+
+    CalendarOriginal findFirstByCountryAndYearOrderByDateTimeDesc(String country, Integer year);
 }

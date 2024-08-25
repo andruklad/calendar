@@ -1,13 +1,18 @@
 package com.colvir.calendar.service;
 
+import com.colvir.calendar.dto.CalendarOriginalLastLoadResponse;
 import com.colvir.calendar.dto.DayTypeResponse;
 import com.colvir.calendar.dto.TransitionResponse;
+import com.colvir.calendar.exception.LastUpdateNotFoundException;
 import com.colvir.calendar.exception.MonthDataNotFoundException;
 import com.colvir.calendar.model.CalendarFinalMonth;
 import com.colvir.calendar.model.CalendarFinalTransition;
+import com.colvir.calendar.model.CalendarOriginal;
 import com.colvir.calendar.model.DayType;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
 import com.colvir.calendar.repository.CalendarFinalTransitionsRepository;
+import com.colvir.calendar.repository.CalendarOriginalRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +28,8 @@ public class CalendarResourceService {
     private final DayTypeService dayTypeService;
 
     private final CalendarFinalTransitionsRepository calendarFinalTransitionsRepository;
+
+    private final CalendarOriginalRepository calendarOriginalRepository;
 
     public DayTypeResponse getDayType(String country, LocalDate date) {
 
@@ -53,5 +60,23 @@ public class CalendarResourceService {
                 .map(calendarFinalTransition -> (new TransitionResponse(calendarFinalTransition.getDayFrom(), calendarFinalTransition.getDayTo())))
                 .toList();
         return transitionResponseList;
+    }
+
+    public CalendarOriginalLastLoadResponse getLastUpdate(String country, Integer year) {
+
+        // Ищем последнюю запись по календарю
+        CalendarOriginal calendarOriginal = calendarOriginalRepository.findFirstByCountryAndYearOrderByDateTimeDesc(country, year);
+
+        // Если не нашли - генерируем исключение
+        if (calendarOriginal == null) {
+            throw new LastUpdateNotFoundException(String.format("Не найдено последнее обновление календаря по стране %s и году %s", country, year));
+        }
+
+        CalendarOriginalLastLoadResponse calendarOriginalLastLoadResponse = new CalendarOriginalLastLoadResponse(
+                calendarOriginal.getDateTime(),
+                calendarOriginal.getStatus(),
+                calendarOriginal.getData()
+        );
+        return calendarOriginalLastLoadResponse;
     }
 }
