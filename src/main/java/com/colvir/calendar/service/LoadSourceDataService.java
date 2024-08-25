@@ -17,9 +17,9 @@ public class LoadSourceDataService {
 
     private final Config config;
 
-    public String loadFromUrl(String country, String year) throws IOException {
+    public String loadFromUrl(String country, Integer year) throws IOException {
 
-        String calendarUrl = String.format("%s/%s/%s/%s", config.getCalendarUrl(), country, year, FILE_NAME);
+        String calendarUrl = String.format("%s/%s/%d/%s", config.getCalendarUrl(), country, year, FILE_NAME);
         return IOUtils.toString(URI.create(calendarUrl), StandardCharsets.UTF_8);
     }
 }

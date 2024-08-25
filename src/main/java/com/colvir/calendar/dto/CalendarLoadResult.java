@@ -9,7 +9,7 @@ public class CalendarLoadResult {
 
     private String country;
 
-    private String year;
+    private Integer year;
 
     private LoadResult loadResult;
 }

@@ -20,7 +20,7 @@ public class CalendarOriginal {
 
     private String country;
 
-    private String year;
+    private Integer year;
 
     private LocalDateTime dateTime;
 
@@ -33,7 +33,7 @@ public class CalendarOriginal {
     @Column(name = "data", columnDefinition = "jsonb")
     private String data;
 
-    public CalendarOriginal(String country, String year, LocalDateTime dateTime, RecordStatus status, Boolean isArchived, String data) {
+    public CalendarOriginal(String country, Integer year, LocalDateTime dateTime, RecordStatus status, Boolean isArchived, String data) {
         this.country = country;
         this.year = year;
         this.dateTime = dateTime;

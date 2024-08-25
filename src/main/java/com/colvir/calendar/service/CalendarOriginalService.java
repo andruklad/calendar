@@ -35,7 +35,7 @@ public class CalendarOriginalService {
     private final LoadSourceDataService loadSourceDataService;
 
     // TODO: 21.08.2024 Переделать
-    private String loadFromUrl(String country, String year) {
+    private String loadFromUrl(String country, Integer year) {
 
         String result = null;
         try {
@@ -48,7 +48,7 @@ public class CalendarOriginalService {
         return result;
     }
 
-    private List<CalendarOriginal> findCalendarActual(String country, String year) {
+    private List<CalendarOriginal> findCalendarActual(String country, Integer year) {
 
         return calendarOriginalRepository.findAllByCountryAndYearAndIsArchived(country, year, false);
     }
@@ -96,7 +96,7 @@ public class CalendarOriginalService {
         return (actualCalendars.isEmpty());
     }
 
-    private LoadResult processCalendarOriginal(String country, String year, String calendarDataActual) {
+    private LoadResult processCalendarOriginal(String country, Integer year, String calendarDataActual) {
 
         LoadResult result;
         try {
@@ -141,7 +141,7 @@ public class CalendarOriginalService {
         for (String country: countryList) {
             for (String year: yearList) {
                 // Получение неархивных необработанных записей
-                List<CalendarOriginal> calendarOriginalList = calendarOriginalRepository.findAllByCountryAndYearAndIsArchivedAndStatus(country, year, false, RecordStatus.NEW);
+                List<CalendarOriginal> calendarOriginalList = calendarOriginalRepository.findAllByCountryAndYearAndIsArchivedAndStatus(country, Integer.parseInt(year), false, RecordStatus.NEW);
                 for (CalendarOriginal calendarOriginal: calendarOriginalList) {
                     processCalendarOriginalToFinal(country, calendarOriginal.getData(), calendarOriginal);
                 }
@@ -149,7 +149,7 @@ public class CalendarOriginalService {
         }
     }
 
-    private LoadResult loadCalendarOriginalByCountryAndYear(String country, String year) {
+    private LoadResult loadCalendarOriginalByCountryAndYear(String country, Integer year) {
 
         String actualCalendarData = loadFromUrl(country, year);
         if (actualCalendarData != null)
@@ -166,8 +166,8 @@ public class CalendarOriginalService {
 
         for (String country: countryList) {
             for (String year: yearList) {
-                LoadResult loadResult = loadCalendarOriginalByCountryAndYear(country, year);
-                CalendarLoadResult calendarLoadResult = new CalendarLoadResult(country, year, loadResult);
+                LoadResult loadResult = loadCalendarOriginalByCountryAndYear(country, Integer.parseInt(year));
+                CalendarLoadResult calendarLoadResult = new CalendarLoadResult(country, Integer.parseInt(year), loadResult);
                 calendarLoadResultList.add(calendarLoadResult);
             }
         }

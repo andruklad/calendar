@@ -54,9 +54,9 @@ public class CalendarOriginalServiceTest {
 
         //Подготовка ожидаемого результата
         List<CalendarLoadResult> expectedCalendarLoadResultList = new ArrayList<>();
-        expectedCalendarLoadResultList.add(new CalendarLoadResult("ru", "2024", LoadResult.SUCCESS));
+        expectedCalendarLoadResultList.add(new CalendarLoadResult("ru", 2024, LoadResult.SUCCESS));
         String calendarDataString = TestUtils.getCalendarDataString();
-        when(loadSourceDataService.loadFromUrl("ru", "2024")).thenReturn(calendarDataString);
+        when(loadSourceDataService.loadFromUrl("ru", 2024)).thenReturn(calendarDataString);
 
 
         // TODO: 21.08.2024 Удалить закомментированный код
@@ -76,7 +76,7 @@ public class CalendarOriginalServiceTest {
 //        Assertions.assertDoesNotThrow(() -> calendarOriginalService.loadCalendarOriginalAll());
 
         verify(calendarOriginalRepository, times(2)).save(any());
-        verify(calendarOriginalRepository).findAllByCountryAndYearAndIsArchived("ru", "2024", false);
+        verify(calendarOriginalRepository).findAllByCountryAndYearAndIsArchived("ru", 2024, false);
         verifyNoMoreInteractions(calendarOriginalRepository);
     }
 

@@ -6,14 +6,14 @@ create table public.calendar_original
     id          integer not null
         primary key,
     country     varchar(255),
+    year        integer,
     data        jsonb,
     date_time   timestamp(6),
     is_archived boolean,
     status      varchar(255)
         constraint calendar_original_status_check
             check ((status)::text = ANY
-                   (ARRAY [('NEW'::character varying)::text, ('PROCESSED'::character varying)::text])),
-    year        varchar(255)
+                   (ARRAY [('NEW'::character varying)::text, ('PROCESSED'::character varying)::text]))
 );
 
 alter table public.calendar_original
@@ -33,11 +33,11 @@ create table public.calendar_final_month
     id          integer not null
         primary key,
     country     varchar(255),
+    month       integer,
+    year        integer,
     date_time   timestamp(6),
     days        varchar(255),
-    is_archived boolean,
-    month       integer,
-    year        integer
+    is_archived boolean
 );
 
 alter table public.calendar_final_month
@@ -57,11 +57,11 @@ create table calendar_final_transition
     id          integer not null
         primary key,
     country     varchar(255),
+    year        integer,
     date_time   timestamp(6),
     day_from    varchar(255),
     day_to      varchar(255),
-    is_archived boolean,
-    year        integer
+    is_archived boolean
 );
 
 alter table calendar_final_transition
