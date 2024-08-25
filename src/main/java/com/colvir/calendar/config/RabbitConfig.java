@@ -28,11 +28,11 @@ public class RabbitConfig {
     @Value("${rabbitmq.queue.originalError}")
     private String queueOriginalError;
 
-    @Value("${rabbitmq.queue.finalMonthsInfo}")
-    private String queueFinalMonthsInfo;
+    @Value("${rabbitmq.queue.finalInfo}")
+    private String queueFinalInfo;
 
-    @Value("${rabbitmq.queue.finalMonthsError}")
-    private String queueFinalMonthsError;
+    @Value("${rabbitmq.queue.finalError}")
+    private String queueFinalError;
 
     // Названия ключей маршрутизации
     @Value("${rabbitmq.routing.originalInfoKey}")
@@ -41,11 +41,11 @@ public class RabbitConfig {
     @Value("${rabbitmq.routing.originalErrorKey}")
     private String routingOriginalErrorKey;
 
-    @Value("${rabbitmq.routing.finalMonthsInfoKey}")
-    private String routingFinalMonthsInfoKey;
+    @Value("${rabbitmq.routing.finalInfoKey}")
+    private String routingFinalInfoKey;
 
-    @Value("${rabbitmq.routing.finalMonthsErrorKey}")
-    private String routingFinalMonthsErrorKey;
+    @Value("${rabbitmq.routing.finalErrorKey}")
+    private String routingFinalErrorKey;
 
     // Очереди
     // Очередь информационных сообщений при загрузке исходного календаря
@@ -62,14 +62,14 @@ public class RabbitConfig {
 
     // Очередь информационных сообщений при загрузке месяцев итогового календаря
     @Bean
-    public Queue finalMonthsInfoQueue() {
-        return new Queue(queueFinalMonthsInfo);
+    public Queue finalInfoQueue() {
+        return new Queue(queueFinalInfo);
     }
 
     // Очередь сообщений по ошибкам при загрузке месяцев итогового календаря
     @Bean
-    public Queue finalMonthsErrorQueue() {
-        return new Queue(queueFinalMonthsError);
+    public Queue finalErrorQueue() {
+        return new Queue(queueFinalError);
     }
 
     // Точка обмена
@@ -96,19 +96,19 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Binding bindingFinalMonthsInfoQueue(){
+    public Binding bindingFinalInfoQueue(){
         return BindingBuilder
-                .bind(finalMonthsInfoQueue())
+                .bind(finalInfoQueue())
                 .to(exchange())
-                .with(routingFinalMonthsInfoKey);
+                .with(routingFinalInfoKey);
     }
 
     @Bean
-    public Binding bindingFinalMonthsErrorQueue(){
+    public Binding bindingFinalErrorQueue(){
         return BindingBuilder
-                .bind(finalMonthsErrorQueue())
+                .bind(finalErrorQueue())
                 .to(exchange())
-                .with(routingFinalMonthsErrorKey);
+                .with(routingFinalErrorKey);
     }
 
     // Соединение с брокером RabbitMQ

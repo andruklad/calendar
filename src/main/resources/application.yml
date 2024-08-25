@@ -32,12 +32,12 @@ app:
 rabbitmq:
   exchange: calendar_exchange
   routing:
-    originalInfoKey: original_info_routing_key
-    originalErrorKey: original_error_routing_key
-    finalMonthsInfoKey: final_months_info_key
-    finalMonthsErrorKey: final_months_error_key
+    originalInfoKey: original_info_key
+    originalErrorKey: original_error_key
+    finalInfoKey: final_info_key
+    finalErrorKey: final_error_key
   queue:
     originalInfo: original_info
     originalError: original_error
-    finalMonthsInfo: final_months_info
-    finalMonthsError: final_month_error
+    finalInfo: final_info
+    finalError: final_error

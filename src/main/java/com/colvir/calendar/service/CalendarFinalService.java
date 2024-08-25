@@ -90,35 +90,33 @@ public class CalendarFinalService {
                 // Загружаем актуальный месяц в БД
                 calendarFinalMonthsRepository.save(calendarFinalMonthActual);
                 // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по месяцам итогового календаря
-                producer.sendMessage(producer.getRabbitConfig().getRoutingFinalMonthsInfoKey(),
+                producer.sendMessage(producer.getRabbitConfig().getRoutingFinalInfoKey(),
                         String.format("Calendar months loaded. Country: %s, year: %s. month: %s",
                                 calendarFinalMonthActual.getCountry(), calendarFinalMonthActual.getYear(), calendarFinalMonthActual.getMonth()));
             }
         } catch (RuntimeException e) {
             // Отправляем сообщение в брокер сообщений, очередь с сообщениями по ошибкам по месяцам итогового календаря
-            producer.sendMessage(producer.getRabbitConfig().getRoutingFinalMonthsErrorKey(),
+            producer.sendMessage(producer.getRabbitConfig().getRoutingFinalErrorKey(),
                     String.format("Calendar month load error. Country: %s, year: %s. month: %s. Error: %s",
                             calendarFinalMonthActual.getCountry(), calendarFinalMonthActual.getYear(), calendarFinalMonthActual.getMonth(), e.getMessage()));
         }
     }
 
-    // TODO: 25.08.2024 Изменить сигнатуру, объект здесь не нужен
-    private List<CalendarFinalTransition> findFinalTransitionsActual(CalendarFinalTransition calendarFinalTransitionActual) {
-        return calendarFinalTransitionsRepository.findAllByCountryAndYearAndIsArchived(
-                calendarFinalTransitionActual.getCountry(),
-                calendarFinalTransitionActual.getYear(),
-                false
-        );
+    private List<CalendarFinalTransition> findFinalTransitionsActual(String country, Integer year) {
+
+        return calendarFinalTransitionsRepository.findAllByCountryAndYearAndIsArchived(country, year,false);
     }
 
     // Обработка актуальных переносов по календарю
     private void processCalendarFinalTransitionList(List<CalendarFinalTransition> calendarFinalTransitionActualList) {
 
+        if (calendarFinalTransitionActualList.isEmpty())
+            return;
+        CalendarFinalTransition calendarFinalTransitionFirst = calendarFinalTransitionActualList.get(0);
         try {
-            if (calendarFinalTransitionActualList.isEmpty())
-                return;
             // Получение списка неархивных актуальных записей по переносам из БД
-            List<CalendarFinalTransition> calendarFinalTransitionDatabaseList = findFinalTransitionsActual(calendarFinalTransitionActualList.get(0));
+            List<CalendarFinalTransition> calendarFinalTransitionDatabaseList =
+                    findFinalTransitionsActual(calendarFinalTransitionFirst.getCountry(), calendarFinalTransitionFirst.getYear());
 
             // Цикл по актуальным записям первоисточника
             for (CalendarFinalTransition calendarFinalTransitionActual : calendarFinalTransitionActualList) {
@@ -144,8 +142,6 @@ public class CalendarFinalService {
                 if (!actualRecordinDataBaseExists) {
                     calendarFinalTransitionsRepository.save(calendarFinalTransitionActual);
                 }
-                // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по переносам итогового календаря
-                // TODO: 25.08.2024 Доработать отправку в брокер
             }
 
             // Формирование списка записей из БД, которые отсутствуют в списке актуальных
@@ -160,12 +156,15 @@ public class CalendarFinalService {
                         calendarFinalTransitionDatabase.setIsArchived(true);
                         calendarFinalTransitionsRepository.save(calendarFinalTransitionDatabase);
                     });
+            // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по переносам итогового календаря
+            producer.sendMessage(producer.getRabbitConfig().getRoutingFinalInfoKey(),
+                    String.format("Calendar transitions loaded. Country: %s, year: %s.",
+                            calendarFinalTransitionFirst.getCountry(), calendarFinalTransitionFirst.getYear()));
         } catch (RuntimeException e) {
             // Отправляем сообщение в брокер сообщений, очередь с сообщениями по ошибкам по переносам итогового календаря
-            // TODO: 25.08.2024 Доработать отправку в брокер
-//            producer.sendMessage(producer.getRabbitConfig().getRoutingFinalTransitionsErrorKey(),
-//                    String.format("Calendar Transition load error. Country: %s, year: %s. Transition: %s. Error: %s",
-//                            calendarFinalTransitionActual.getCountry(), calendarFinalTransitionActual.getYear(), calendarFinalTransitionActual.getTransition(), e.getMessage()));
+            producer.sendMessage(producer.getRabbitConfig().getRoutingFinalErrorKey(),
+                    String.format("Calendar transitions load error. Country: %s, year: %s.",
+                            calendarFinalTransitionFirst.getCountry(), calendarFinalTransitionFirst.getYear()));
         }
     }
 

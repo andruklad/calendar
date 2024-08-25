@@ -32,14 +32,14 @@ public class Consumer {
     }
 
     // Очередь с информационными сообщениями при обработке месяцев календаря
-    @RabbitListener(queues = "${rabbitmq.queue.finalMonthsInfo}")
-    public void listenFinalMonthsInfo(String message) {
-        logMessage(rabbitConfig.getQueueFinalMonthsInfo(), message);
+    @RabbitListener(queues = "${rabbitmq.queue.finalInfo}")
+    public void listenFinalInfo(String message) {
+        logMessage(rabbitConfig.getQueueFinalInfo(), message);
     }
 
     // Очередь с сообщениями по ошибкам при обработке месяцев календаря
-    @RabbitListener(queues = "${rabbitmq.queue.finalMonthsError}")
-    public void listenFinalMonthsError(String message) {
-        logMessage(rabbitConfig.getQueueFinalMonthsError(), message);
+    @RabbitListener(queues = "${rabbitmq.queue.finalError}")
+    public void listenFinalError(String message) {
+        logMessage(rabbitConfig.getQueueFinalError(), message);
     }
 }
