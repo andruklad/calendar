@@ -25,7 +25,7 @@ app:
 #    url: https://xmlcalendar.ru/datatestfail
     countryList: ru
 #    countryList: ru,by,kz,uz
-    yearList: 2023,2024
+    yearList: 2024
 #    yearList: 2020,2021,2022,2023,2024
   loadCalendarInterval: 60000
 

@@ -50,3 +50,22 @@ create index calendar_final_month_country_year_month_is_archived_index
 create sequence public.sequence_calendar_final_month_id;
 
 alter sequence public.sequence_calendar_final_month_id owner to postgres;
+
+
+create table calendar_final_transition
+(
+    id          integer not null
+        primary key,
+    country     varchar(255),
+    date_time   timestamp(6),
+    day_from    varchar(255),
+    day_to      varchar(255),
+    is_archived boolean,
+    year        integer
+);
+
+alter table calendar_final_transition
+    owner to postgres;
+
+create index calendar_final_transition_country_year_day_from_is_archived_ind
+    on calendar_final_transition (country, year, day_from, is_archived);
