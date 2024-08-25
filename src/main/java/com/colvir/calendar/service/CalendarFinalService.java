@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -150,13 +149,11 @@ public class CalendarFinalService {
             }
 
             // Формирование списка записей из БД, которые отсутствуют в списке актуальных
-            calendarFinalTransitionDatabaseList.removeIf(calendarFinalTransitionDatabase -> !(
-                    // Если в списке актуальных не нашли - оставляем в списке (для удаления)
+            calendarFinalTransitionDatabaseList.removeIf(calendarFinalTransitionDatabase -> // Если в списке актуальных не нашли - оставляем в списке (для удаления)
                     calendarFinalTransitionActualList.stream()
                             .filter(calendarFinalTransitionActual -> (calendarFinalTransitionActual.getDayFrom().equals(calendarFinalTransitionDatabase.getDayFrom())
                                     && calendarFinalTransitionActual.getDayTo().equals(calendarFinalTransitionDatabase.getDayTo())))
-                            .findFirst().isEmpty()
-            ));
+                            .findFirst().isPresent());
             // Отправка в архив записей из БД, которые отсутствуют в списке актуальных
             calendarFinalTransitionDatabaseList
                     .forEach(calendarFinalTransitionDatabase -> {
