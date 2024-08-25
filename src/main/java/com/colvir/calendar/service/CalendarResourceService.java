@@ -12,7 +12,6 @@ import com.colvir.calendar.model.DayType;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
 import com.colvir.calendar.repository.CalendarFinalTransitionsRepository;
 import com.colvir.calendar.repository.CalendarOriginalRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
