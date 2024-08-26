@@ -30,7 +30,7 @@ public class CalendarFinalService {
 
     private final CalendarFinalTransitionsRepository calendarFinalTransitionsRepository;
 
-    private final CalendarFinalStatisticRepository сalendarFinalStatisticRepository;
+    private final CalendarFinalStatisticRepository calendarFinalStatisticRepository;
 
     private final Producer producer;
 
@@ -179,7 +179,7 @@ public class CalendarFinalService {
 
     private List<CalendarFinalStatistic> findFinalStatisticsActual(CalendarFinalStatistic calendarFinalStatistic) {
 
-        return сalendarFinalStatisticRepository.findAllByCountryAndYearAndIsArchived(
+        return calendarFinalStatisticRepository.findAllByCountryAndYearAndIsArchived(
                 calendarFinalStatistic.getCountry(),
                 calendarFinalStatistic.getYear(),
                 false);
@@ -206,12 +206,12 @@ public class CalendarFinalService {
                 } else {
                     // Которые не соответствуют актуальной - в архив
                     calendarFinalStatisticInDatabase.setIsArchived(true);
-                    сalendarFinalStatisticRepository.save(calendarFinalStatisticInDatabase);
+                    calendarFinalStatisticRepository.save(calendarFinalStatisticInDatabase);
                 }
             }
             // Если не нашли актуальную запись в БД - сохраняем из первоисточника
             if (!actualRecordinDataBaseExists) {
-                сalendarFinalStatisticRepository.save(calendarFinalStatisticActual);
+                calendarFinalStatisticRepository.save(calendarFinalStatisticActual);
             }
 
             // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по статистике итогового календаря
