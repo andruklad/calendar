@@ -8,4 +8,6 @@ import java.util.List;
 public interface CalendarFinalStatisticRepository extends JpaRepository<CalendarFinalStatistic, Integer> {
 
     List<CalendarFinalStatistic> findAllByCountryAndYearAndIsArchived(String country, Integer year, Boolean isArchived);
+
+    CalendarFinalStatistic findFirstByCountryAndYearAndIsArchived(String country, Integer year, Boolean isArchived);
 }

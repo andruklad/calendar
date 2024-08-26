@@ -1,9 +1,6 @@
 package com.colvir.calendar.controller;
 
-import com.colvir.calendar.dto.CalendarLoadResult;
-import com.colvir.calendar.dto.CalendarOriginalLastLoadResponse;
-import com.colvir.calendar.dto.DayTypeResponse;
-import com.colvir.calendar.dto.TransitionResponse;
+import com.colvir.calendar.dto.*;
 import com.colvir.calendar.service.CalendarOriginalService;
 import com.colvir.calendar.service.CalendarResourceService;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +38,12 @@ public class CalendarController {
     public List<TransitionResponse> getTransitions(@RequestParam String country, @RequestParam Integer year) {
 
         return calendarResourceService.getTransitions(country, year);
+    }
+
+    @GetMapping("get-statistic")
+    public CalendarDataStatisticResponse getStatistic(@RequestParam String country, @RequestParam Integer year) {
+
+        return calendarResourceService.getStatistic(country, year);
     }
 
     @GetMapping("get-last-update")

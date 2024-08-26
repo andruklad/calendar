@@ -1,15 +1,15 @@
 package com.colvir.calendar.service;
 
+import com.colvir.calendar.dto.CalendarDataStatisticResponse;
 import com.colvir.calendar.dto.CalendarOriginalLastLoadResponse;
 import com.colvir.calendar.dto.DayTypeResponse;
 import com.colvir.calendar.dto.TransitionResponse;
 import com.colvir.calendar.exception.LastUpdateNotFoundException;
 import com.colvir.calendar.exception.MonthDataNotFoundException;
-import com.colvir.calendar.model.CalendarFinalMonth;
-import com.colvir.calendar.model.CalendarFinalTransition;
-import com.colvir.calendar.model.CalendarOriginal;
-import com.colvir.calendar.model.DayType;
+import com.colvir.calendar.exception.StatisticDataNotFoundException;
+import com.colvir.calendar.model.*;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
+import com.colvir.calendar.repository.CalendarFinalStatisticRepository;
 import com.colvir.calendar.repository.CalendarFinalTransitionsRepository;
 import com.colvir.calendar.repository.CalendarOriginalRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +29,8 @@ public class CalendarResourceService {
     private final CalendarFinalTransitionsRepository calendarFinalTransitionsRepository;
 
     private final CalendarOriginalRepository calendarOriginalRepository;
+
+    private final CalendarFinalStatisticRepository calendarFinalStatisticRepository;
 
     public DayTypeResponse getDayType(String country, LocalDate date) {
 
@@ -59,6 +61,24 @@ public class CalendarResourceService {
                 .map(calendarFinalTransition -> (new TransitionResponse(calendarFinalTransition.getDayFrom(), calendarFinalTransition.getDayTo())))
                 .toList();
         return transitionResponseList;
+    }
+
+    public CalendarDataStatisticResponse getStatistic(String country, Integer year) {
+
+        CalendarFinalStatistic calendarFinalStatistic = calendarFinalStatisticRepository.findFirstByCountryAndYearAndIsArchived(
+                country,
+                year,
+                false);
+
+        // Если не нашли - генерируем исключение
+        if (calendarFinalStatistic == null) {
+            throw new StatisticDataNotFoundException(String.format("Не найдены актуальные данные статистики по стране %s и году %s", country, year));
+        }
+
+        CalendarDataStatisticResponse calendarDataStatisticResponse = new CalendarDataStatisticResponse(
+                calendarFinalStatistic.getWorkdays(),
+                calendarFinalStatistic.getHolidays());
+        return calendarDataStatisticResponse;
     }
 
     public CalendarOriginalLastLoadResponse getLastUpdate(String country, Integer year) {
