@@ -43,7 +43,7 @@ public class CalendarOriginalService {
         } catch (IOException e) {
             // Отправляем сообщение в брокер сообщений, очередь с ошибками по исходному календарю
             producer.sendMessage(rabbitConfig.getRoutingOriginalErrorKey(),
-                    String.format("Error loading calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
+                    String.format("Calendar load error. Country: %s, year: %s. Error: %s.", country, year, e.getMessage()));
         }
         return result;
     }
@@ -114,14 +114,14 @@ public class CalendarOriginalService {
                 processCalendarOriginalToFinal(country, calendarDataActual, actualCalendarOriginal);
                 // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по исходному календарю
                 producer.sendMessage(rabbitConfig.getRoutingOriginalInfoKey(),
-                        String.format("Calendar processed. Country: %s, year: %s", country, year));
+                        String.format("Calendar process success. Country: %s, year: %s.", country, year));
             }
             result = LoadResult.SUCCESS;
         } catch (RuntimeException e) {
             result = LoadResult.PROCESS_FAIL;
             // Отправляем сообщение в брокер сообщений, очередь с ошибками по исходному календарю
             producer.sendMessage(rabbitConfig.getRoutingOriginalErrorKey(),
-                    String.format("Error processing calendar. Country: %s, year: %s. Error: %s", country, year, e.getMessage()));
+                    String.format("Error process error. Country: %s, year: %s. Error: %s.", country, year, e.getMessage()));
         }
         return result;
     }

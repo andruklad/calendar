@@ -83,30 +83,38 @@ public class CalendarFinalService {
     }
 
     // Обработка актуального месяца по календарю
-    private void processCalendarFinalMonth(CalendarFinalMonth calendarFinalMonthActual) {
+    private void processCalendarFinalMonthList(List<CalendarFinalMonth> calendarFinalMonthActualList) {
 
-        try {
-            // Получение списка неархивных записей по месяцу из БД
-            List<CalendarFinalMonth> calendarFinalMonthCurrentList = findFinalMonthsActual(calendarFinalMonthActual);
+        if (calendarFinalMonthActualList == null || calendarFinalMonthActualList.isEmpty())
+            return;
 
-            // Проверим, есть ли актуальная запись по месяцу
-            if (isNotExistsActualFinalMonths(calendarFinalMonthCurrentList, calendarFinalMonthActual)) {
-                // Если нету
-                // Отправляем исходные актуальные записи в архив
-                setArchiveCalendarsList(calendarFinalMonthCurrentList);
-                // Загружаем актуальный месяц в БД
-                calendarFinalMonthsRepository.save(calendarFinalMonthActual);
-                // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по месяцам итогового календаря
-                producer.sendMessage(rabbitConfig.getRoutingFinalInfoKey(),
-                        String.format("Calendar months loaded. Country: %s, year: %s. month: %s",
-                                calendarFinalMonthActual.getCountry(), calendarFinalMonthActual.getYear(), calendarFinalMonthActual.getMonth()));
+        for (CalendarFinalMonth calendarFinalMonthActual : calendarFinalMonthActualList) {
+            try {
+                // Получение списка неархивных записей по месяцу из БД
+                List<CalendarFinalMonth> calendarFinalMonthCurrentList = findFinalMonthsActual(calendarFinalMonthActual);
+
+                // Проверим, есть ли актуальная запись по месяцу
+                if (isNotExistsActualFinalMonths(calendarFinalMonthCurrentList, calendarFinalMonthActual)) {
+                    // Если нету
+                    // Отправляем исходные актуальные записи в архив
+                    setArchiveCalendarsList(calendarFinalMonthCurrentList);
+                    // Загружаем актуальный месяц в БД
+                    calendarFinalMonthsRepository.save(calendarFinalMonthActual);
+                    // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями итогового календаря
+                }
+            } catch (RuntimeException e) {
+                // Отправляем сообщение в брокер сообщений, очередь с сообщениями по ошибкам итогового календаря
+                producer.sendMessage(rabbitConfig.getRoutingFinalErrorKey(),
+                        String.format("Calendar months process error. Country: %s, year: %s. month: %s. Error: %s",
+                                calendarFinalMonthActual.getCountry(), calendarFinalMonthActual.getYear(), calendarFinalMonthActual.getMonth(), e.getMessage()));
             }
-        } catch (RuntimeException e) {
-            // Отправляем сообщение в брокер сообщений, очередь с сообщениями по ошибкам по месяцам итогового календаря
-            producer.sendMessage(rabbitConfig.getRoutingFinalErrorKey(),
-                    String.format("Calendar month load error. Country: %s, year: %s. month: %s. Error: %s",
-                            calendarFinalMonthActual.getCountry(), calendarFinalMonthActual.getYear(), calendarFinalMonthActual.getMonth(), e.getMessage()));
         }
+        // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями итогового календаря
+        CalendarFinalMonth calendarFinalMonthActualFirst = calendarFinalMonthActualList.get(0);
+        producer.sendMessage(rabbitConfig.getRoutingFinalInfoKey(),
+                String.format("Calendar months process success. Country: %s, year: %s.",
+                        calendarFinalMonthActualFirst.getCountry(), calendarFinalMonthActualFirst.getYear()));
+
     }
 
     private List<CalendarFinalTransition> findFinalTransitionsActual(CalendarFinalTransition calendarFinalTransition) {
@@ -226,6 +234,7 @@ public class CalendarFinalService {
         }
     }
 
+    // Обработка данных по календарю
     private void processCalendarData(CalendarData calendarData) {
 
         // Обработка месяцев
@@ -241,10 +250,8 @@ public class CalendarFinalService {
                 .toList();
 
         // Запуск обработки по каждому месяцу
-        for (CalendarFinalMonth calendarFinalMonth : calendarFinalMonthList) {
-            processCalendarFinalMonth(calendarFinalMonth);
-        }
-        
+        processCalendarFinalMonthList(calendarFinalMonthList);
+
         // Обработка переносов
         List<CalendarFinalTransition> calendarFinalTransitionList = calendarData.getTransitions().stream()
                 .map(calendarDataTransition -> new CalendarFinalTransition(
