@@ -21,17 +21,17 @@ public class CalendarController {
     private final CalendarOriginalService calendarOriginalService;
     private final CalendarResourceService calendarResourceService;
 
+    @GetMapping("load-calendar")
+    public List<CalendarLoadResult> loadCalendar() {
+
+        return calendarOriginalService.loadCalendarOriginalAll();
+    }
+
     @GetMapping("get-day-type")
     // Пример формата даты: 2024-08-13
     public DayTypeResponse getDayType(@RequestParam String country, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
 
         return calendarResourceService.getDayType(country, date);
-    }
-
-    @GetMapping("load-calendar")
-    public List<CalendarLoadResult> loadCalendar() {
-
-        return calendarOriginalService.loadCalendarOriginalAll();
     }
 
     @GetMapping("get-transitions")

@@ -22,7 +22,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -103,11 +102,11 @@ public class CalendarResourceServiceTest {
         String dayTo = "04.29";
         LocalDateTime localDateTime = LocalDateTime.now();
         CalendarFinalTransition calendarFinalTransition = new CalendarFinalTransition(country, year, dayFrom, dayTo, localDateTime, false);
-        List<CalendarFinalTransition> calendarFinalTransitionList = new ArrayList<>(Arrays.asList(calendarFinalTransition));
+        List<CalendarFinalTransition> calendarFinalTransitionList = new ArrayList<>(List.of(calendarFinalTransition));
         when(calendarFinalTransitionsRepository.findAllByCountryAndYearAndIsArchived(country, year, false)).thenReturn(calendarFinalTransitionList);
 
         TransitionResponse requiredTransitionResponse = new TransitionResponse(dayFrom, dayTo);
-        List<TransitionResponse> requiredTransitionResponseList = new ArrayList<>(Arrays.asList(requiredTransitionResponse));
+        List<TransitionResponse> requiredTransitionResponseList = new ArrayList<>(List.of(requiredTransitionResponse));
 
         //Начало теста
         List<TransitionResponse> actualTransitionResponseList = calendarResourceService.getTransitions(country, year);
@@ -147,12 +146,6 @@ public class CalendarResourceServiceTest {
 
         //Подготовка ожидаемого результата
         String calendarDataString = TestUtils.getCalendarDataString();
-        CalendarData calendarData;
-        try {
-            calendarData = objectMapper.readValue(calendarDataString, CalendarData.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
         LocalDateTime localDateTime = LocalDateTime.now();
 
         CalendarOriginal calendarOriginal = new CalendarOriginal(country, year, localDateTime, RecordStatus.PROCESSED, false, calendarDataString);
