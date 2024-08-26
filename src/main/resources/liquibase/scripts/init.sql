@@ -69,3 +69,22 @@ alter table calendar_final_transition
 
 create index calendar_final_transition_country_year_day_from_is_archived_ind
     on calendar_final_transition (country, year, day_from, is_archived);
+
+
+create table calendar_final_statistic
+(
+    id          integer not null
+        primary key,
+    country     varchar(255),
+    year        integer,
+    date_time   timestamp(6),
+    holidays    integer,
+    is_archived boolean,
+    workdays    integer
+);
+
+alter table calendar_final_statistic
+    owner to postgres;
+
+create index calendar_final_statistic_country_year_is_archived_index
+    on calendar_final_statistic (country, year, is_archived);

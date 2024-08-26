@@ -3,9 +3,11 @@ package com.colvir.calendar.service;
 import com.colvir.calendar.config.RabbitConfig;
 import com.colvir.calendar.dto.CalendarData;
 import com.colvir.calendar.model.CalendarFinalMonth;
+import com.colvir.calendar.model.CalendarFinalStatistic;
 import com.colvir.calendar.model.CalendarFinalTransition;
 import com.colvir.calendar.rabbitmq.Producer;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
+import com.colvir.calendar.repository.CalendarFinalStatisticRepository;
 import com.colvir.calendar.repository.CalendarFinalTransitionsRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +29,8 @@ public class CalendarFinalService {
     private final CalendarFinalMonthsRepository calendarFinalMonthsRepository;
 
     private final CalendarFinalTransitionsRepository calendarFinalTransitionsRepository;
+
+    private final CalendarFinalStatisticRepository сalendarFinalStatisticRepository;
 
     private final Producer producer;
 
@@ -151,7 +155,7 @@ public class CalendarFinalService {
             }
 
             // Формирование списка записей из БД, которые отсутствуют в списке актуальных
-            calendarFinalTransitionDatabaseList.removeIf(calendarFinalTransitionDatabase -> // Если в списке актуальных не нашли - оставляем в списке (для удаления)
+            calendarFinalTransitionDatabaseList.removeIf(calendarFinalTransitionDatabase -> // Если нашли в списке актуальных - удаляем из списка
                     calendarFinalTransitionActualList.stream()
                             .anyMatch(calendarFinalTransitionActual -> (calendarFinalTransitionActual.getDayFrom().equals(calendarFinalTransitionDatabase.getDayFrom())
                                     && calendarFinalTransitionActual.getDayTo().equals(calendarFinalTransitionDatabase.getDayTo()))));
@@ -163,13 +167,62 @@ public class CalendarFinalService {
                     });
             // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по переносам итогового календаря
             producer.sendMessage(rabbitConfig.getRoutingFinalInfoKey(),
-                    String.format("Calendar transitions loaded. Country: %s, year: %s.",
+                    String.format("Calendar transitions process success. Country: %s, year: %s.",
                             calendarFinalTransitionFirst.getCountry(), calendarFinalTransitionFirst.getYear()));
         } catch (RuntimeException e) {
             // Отправляем сообщение в брокер сообщений, очередь с сообщениями по ошибкам по переносам итогового календаря
             producer.sendMessage(rabbitConfig.getRoutingFinalErrorKey(),
-                    String.format("Calendar transitions load error. Country: %s, year: %s.",
+                    String.format("Calendar transitions process error. Country: %s, year: %s.",
                             calendarFinalTransitionFirst.getCountry(), calendarFinalTransitionFirst.getYear()));
+        }
+    }
+
+    private List<CalendarFinalStatistic> findFinalStatisticsActual(CalendarFinalStatistic calendarFinalStatistic) {
+
+        return сalendarFinalStatisticRepository.findAllByCountryAndYearAndIsArchived(
+                calendarFinalStatistic.getCountry(),
+                calendarFinalStatistic.getYear(),
+                false);
+    }
+
+    // Обработка актуальной статистики по календарю
+    private void processCalendarFinalStatistic(CalendarFinalStatistic calendarFinalStatisticActual) {
+
+        if (calendarFinalStatisticActual == null)
+            return;
+        try {
+            // Получение списка неархивных записей по статистике из БД
+            List<CalendarFinalStatistic> calendarFinalStatisticDatabaseList =
+                    findFinalStatisticsActual(calendarFinalStatisticActual);
+
+            // Обработка полученного списка из БД
+            boolean actualRecordinDataBaseExists = false;
+            for (CalendarFinalStatistic calendarFinalStatisticInDatabase : calendarFinalStatisticDatabaseList) {
+                // Проверка актуальности записи из БД
+                if (calendarFinalStatisticInDatabase.getWorkdays().equals(calendarFinalStatisticActual.getWorkdays())
+                        && calendarFinalStatisticInDatabase.getHolidays().equals(calendarFinalStatisticActual.getHolidays())) {
+                    // Имеется актуальная запись в БД, обновление не требуется
+                    actualRecordinDataBaseExists = true;
+                } else {
+                    // Которые не соответствуют актуальной - в архив
+                    calendarFinalStatisticInDatabase.setIsArchived(true);
+                    сalendarFinalStatisticRepository.save(calendarFinalStatisticInDatabase);
+                }
+            }
+            // Если не нашли актуальную запись в БД - сохраняем из первоисточника
+            if (!actualRecordinDataBaseExists) {
+                сalendarFinalStatisticRepository.save(calendarFinalStatisticActual);
+            }
+
+            // Отправляем сообщение в брокер сообщений, очередь с информационными сообщениями по статистике итогового календаря
+            producer.sendMessage(rabbitConfig.getRoutingFinalInfoKey(),
+                    String.format("Calendar statistics process success. Country: %s, year: %s.",
+                            calendarFinalStatisticActual.getCountry(), calendarFinalStatisticActual.getYear()));
+        } catch (RuntimeException e) {
+            // Отправляем сообщение в брокер сообщений, очередь с сообщениями по ошибкам по статистике итогового календаря
+            producer.sendMessage(rabbitConfig.getRoutingFinalErrorKey(),
+                    String.format("Calendar statistics process error. Country: %s, year: %s.",
+                            calendarFinalStatisticActual.getCountry(), calendarFinalStatisticActual.getYear()));
         }
     }
 
@@ -204,7 +257,14 @@ public class CalendarFinalService {
                 .toList();
         processCalendarFinalTransitionList(calendarFinalTransitionList);
 
-        // TODO: 25.08.2024 Обработка статистики
+        CalendarFinalStatistic calendarFinalStatistic = new CalendarFinalStatistic(
+                calendarData.getCountry(),
+                calendarData.getYear(),
+                calendarData.getStatistic().getWorkdays(),
+                calendarData.getStatistic().getHolidays(),
+                LocalDateTime.now(),
+                false);
+        processCalendarFinalStatistic(calendarFinalStatistic);
     }
 
     public void processCalendarOriginal(String calendarDataString, String country) {
