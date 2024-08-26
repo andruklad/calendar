@@ -4,6 +4,7 @@ import com.colvir.calendar.config.Config;
 import com.colvir.calendar.config.RabbitConfig;
 import com.colvir.calendar.rabbitmq.Producer;
 import com.colvir.calendar.repository.CalendarFinalMonthsRepository;
+import com.colvir.calendar.repository.CalendarFinalStatisticRepository;
 import com.colvir.calendar.repository.CalendarFinalTransitionsRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,9 @@ public class CalendarFinalServiceTest {
     @MockBean
     private CalendarFinalTransitionsRepository calendarFinalTransitionsRepository;
 
+    @MockBean
+    private CalendarFinalStatisticRepository calendarFinalStatisticRepository;
+
     @Test
     void processCalendarOriginal_success() {
 
@@ -63,6 +67,9 @@ public class CalendarFinalServiceTest {
         verify(calendarFinalTransitionsRepository).findAllByCountryAndYearAndIsArchived(any(), any(), any());
         verify(calendarFinalTransitionsRepository, times(5)).save(any());
         verifyNoMoreInteractions(calendarFinalTransitionsRepository);
-        // TODO: 25.08.2024 Обработка статистики
+        // Обработка статистики
+        verify(calendarFinalStatisticRepository).findAllByCountryAndYearAndIsArchived(any(), any(), any());
+        verify(calendarFinalStatisticRepository).save(any());
+        verifyNoMoreInteractions(calendarFinalStatisticRepository);
     }
 }
