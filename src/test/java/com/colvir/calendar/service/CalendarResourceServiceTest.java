@@ -30,7 +30,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
         CalendarResourceService.class,
-        DayTypeService.class,
         Producer.class,
         Config.class,
         RabbitConfig.class
@@ -43,7 +42,7 @@ public class CalendarResourceServiceTest {
     @Autowired
     private CalendarResourceService calendarResourceService;
 
-    @Autowired
+    @MockBean
     private DayTypeService dayTypeService;
 
     @MockBean
@@ -82,6 +81,7 @@ public class CalendarResourceServiceTest {
         when(calendarFinalMonthsRepository.findFirstByCountryAndYearAndMonthAndIsArchived(country, year, month, false)).thenReturn(calendarFinalMonth);
         DayType dayType = DayType.WORKING_DAY;
         DayTypeResponse expectedDayTypeResponse = new DayTypeResponse(dayType.getValue(), dayType);
+        when(dayTypeService.calcDayType(dayOfMonth, days)).thenReturn(DayType.WORKING_DAY);
 
         //Начало теста
         DayTypeResponse actualDayTypeResponse = calendarResourceService.getDayType(country, date);
