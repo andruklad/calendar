@@ -40,19 +40,13 @@ public class CalendarFinalServiceTest {
     @MockBean
     private CalendarFinalStatisticRepository calendarFinalStatisticRepository;
 
+    @MockBean Producer producer;
+
     @Test
     void processCalendarOriginal_success() {
 
         //Подготовка входных данных
         String calendarDataString = TestUtils.getCalendarDataString();
-        // TODO: 21.08.2024 Удалить
-//        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("calendarData.json")) {
-//            ObjectMapper mapper = new ObjectMapper();
-//            JsonNode jsonNode = mapper.readValue(in, JsonNode.class);
-//            calendarDataString = mapper.writeValueAsString(jsonNode);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
         String country = "ru";
 
         //Подготовка ожидаемого результата

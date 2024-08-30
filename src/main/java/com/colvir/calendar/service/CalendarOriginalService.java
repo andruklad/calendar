@@ -34,7 +34,6 @@ public class CalendarOriginalService {
 
     private final LoadSourceDataService loadSourceDataService;
 
-    // TODO: 21.08.2024 Переделать
     private String loadFromUrl(String country, Integer year) {
 
         String result = null;
@@ -80,17 +79,6 @@ public class CalendarOriginalService {
         }
         JSONObject actualCalendarDataJson = new JSONObject(actualCalendarData);
         Optional<CalendarOriginal> actualCalendars = calendarOriginalList.stream()
-//                .peek(cl -> {
-//                    String s = new JSONObject(cl.getData()).toString();
-//                    System.out.println(cl.getData());
-//                    System.out.println(s);
-//                    System.out.println(actualCalendarData);
-//                    System.out.println(actualCalendarDataJson);
-
-//                    System.out.println(new JSONObject(cl.getData()));
-//                    System.out.println(actualCalendarDataJson);
-//                })
-                // TODO: 27.07.2024 Подумать над оптимизацией
                 .filter(cl -> (new JSONObject(cl.getData())).toString().equals(actualCalendarDataJson.toString()))
                 .findFirst();
         return (actualCalendars.isEmpty());

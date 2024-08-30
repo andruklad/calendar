@@ -47,6 +47,9 @@ public class CalendarOriginalServiceTest {
     @MockBean
     private CalendarFinalService calendarFinalService;
 
+    @MockBean
+    Producer producer;
+
     @Test
     void loadCalendarOriginalAll_success() throws IOException {
 
@@ -58,22 +61,9 @@ public class CalendarOriginalServiceTest {
         String calendarDataString = TestUtils.getCalendarDataString();
         when(loadSourceDataService.loadFromUrl("ru", 2024)).thenReturn(calendarDataString);
 
-
-        // TODO: 21.08.2024 Удалить закомментированный код
-//        List<CalendarOriginal> calendarOriginalList = new ArrayList<>();
-//        when(calendarOriginalRepository.findAllByCountryAndYearAndIsArchived(any(), any(), any())).thenReturn(calendarOriginalList);
-//        CalendarOriginal calendarOriginal = new CalendarOriginal();
-//        when(calendarOriginalRepository.save(any())).thenReturn(null);
-//        when(calendarOriginalRepository.findAllByCountryAndYearAndIsArchived(anyString(), anyString(), anyBoolean())).thenReturn(null);
-//        doNothing().when(calendarOriginalRepository).findAllByCountryAndYearAndIsArchived(anyString(), anyString(), anyBoolean());
-//        doNothing().when(calendarFinalService).processCalendarOriginal(anyString(), anyString());
-
-        // ArgumentCaptor
-
         //Начало теста
         List<CalendarLoadResult> actualCalendarLoadResultList = calendarOriginalService.loadCalendarOriginalAll();
         assertEquals(expectedCalendarLoadResultList, actualCalendarLoadResultList);
-//        Assertions.assertDoesNotThrow(() -> calendarOriginalService.loadCalendarOriginalAll());
 
         verify(calendarOriginalRepository, times(2)).save(any());
         verify(calendarOriginalRepository).findAllByCountryAndYearAndIsArchived("ru", 2024, false);
