@@ -10,14 +10,10 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
 
   liquibase:
     change-log: classpath:liquibase/changelog-master.yaml
-
-server:
-  servlet:
-    context-path: /api
 
 app:
   calendar:
