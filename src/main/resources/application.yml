@@ -21,10 +21,6 @@ spring:
     username: guest
     password: guest
 
-server:
-  servlet:
-    context-path: /api
-
 app:
   calendar:
     url: https://xmlcalendar.ru/data
@@ -47,3 +43,9 @@ rabbitmq:
     originalError: original_error
     finalInfo: final_info
     finalError: final_error
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, metrics, info
