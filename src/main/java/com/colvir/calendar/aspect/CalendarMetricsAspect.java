@@ -20,7 +20,7 @@ public class CalendarMetricsAspect {
     private final MeterRegistry meterRegistry;
 
     @Pointcut("within(com.colvir.calendar.controller.CalendarController)")
-    public void сalendarControllerMethods() {
+    public void calendarControllerMethods() {
     }
 
     @Pointcut("execution(public * com.colvir.calendar.service.CalendarOriginalService.loadCalendarOriginalAll())")
@@ -28,7 +28,7 @@ public class CalendarMetricsAspect {
     }
 
     // Мониторинг вызова методов контроллера CalendarController
-    @Around("сalendarControllerMethods()")
+    @Around("calendarControllerMethods()")
     public Object logCallCalendarControllerMethods(ProceedingJoinPoint joinPoint) {
 
         String methodName = joinPoint.getSignature().getName();
