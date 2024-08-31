@@ -17,6 +17,10 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 public class RabbitConfig {
 
+    // Название хоста
+    @Value("${spring.rabbitmq.host}")
+    private String host;
+
     // Название точки обмена
     @Value("${rabbitmq.exchange}")
     private String exchange;
@@ -114,7 +118,7 @@ public class RabbitConfig {
     // Соединение с брокером RabbitMQ
     @Bean
     public ConnectionFactory connectionFactory() {
-        return new CachingConnectionFactory("localhost");
+        return new CachingConnectionFactory(host);
     }
 
     // Шаблон для отправки сообщений

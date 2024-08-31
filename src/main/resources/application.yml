@@ -15,15 +15,15 @@ spring:
   liquibase:
     change-log: classpath:liquibase/changelog-master.yaml
 
-server:
-  servlet:
-    context-path: /api
-
   rabbitmq:
-    host: localhost
+    host: rabbitmq
     port: 5672
     username: guest
     password: guest
+
+server:
+  servlet:
+    context-path: /api
 
 app:
   calendar:

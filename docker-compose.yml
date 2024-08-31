@@ -3,19 +3,15 @@ version: '2.1'
 services:
 
   java-app:
-    build: . # путь к Dockerfile приложения
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: calendar-app
     ports:
       - "8080:8080"
     depends_on:
       - pg
       - rabbitmq
-#      pg:
-#        condition: service_healthy
-#      rabbitmq:
-#        condition: service_healthy
-#    links:
-#      - rabbitmq
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://pg/postgres
       SPRING_DATASOURCE_USERNAME: postgres
@@ -37,20 +33,18 @@ services:
       - pgdata:/var/lib/pgsql/data
     networks:
       - calendar-network
-#    healthcheck:
-#      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
-#      interval: 30s
-#      timeout: 60s
-#      retries: 5
 
   rabbitmq:
     image: 'rabbitmq:3.6-management-alpine'
     container_name: rabbitmq
+    hostname: rabbitmq
     ports:
       # The standard AMQP protocol port
       - '5672:5672'
       # HTTP management UI
       - '15672:15672'
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     environment:
       # The location of the RabbitMQ server.  "amqp" is the protocol;
       # "rabbitmq" is the hostname.  Note that there is not a guarantee
@@ -59,19 +53,12 @@ services:
       AMQP_URL: 'amqp://rabbitmq?connection_attempts=5&retry_delay=5'
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
-#      SPRING_RABBITMQ_HOST: 'localhost'
     networks:
       - calendar-network
-#    healthcheck:
-#      test: rabbitmq-diagnostics -q ping
-##      test: ["CMD", "curl", "http://localhost:15672"]
-##      test: ["CMD", "curl", "-f", "http://localhost:15672"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 5
 
 volumes:
   pgdata:
+  rabbitmq_data:
 
 networks:
   calendar-network:
