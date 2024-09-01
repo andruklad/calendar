@@ -22,4 +22,4 @@ jobs:
           distribution: 'temurin'
 
       - name: Maven Package
-        run: ./mvnw -B clean package -DskipTests=false
+        run: ./mvnw clean package -DskipTests=false
