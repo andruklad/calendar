@@ -41,14 +41,28 @@ jobs:
           source: "."
           target: "/home/${{ secrets.SERVER_USERNAME }}/app"
 
+#      - name: Execute Docker Compose on server
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ secrets.SERVER_IP_ADDRESS }}
+#          username: ${{ secrets.SERVER_USERNAME }}
+#          key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
+#          script: |
+#            cd /home/${{ secrets.SERVER_USERNAME }}/app
+#            docker-compose pull
+#            docker-compose down
+#            docker-compose up -d
+
+      # https://github.com/marketplace/actions/ssh-command
       - name: Execute Docker Compose on server
-        uses: appleboy/ssh-action@master
+        uses: D3rHase/ssh-command-action@latest
         with:
           host: ${{ secrets.SERVER_IP_ADDRESS }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
-          script: |
+          port: "22"
+          user: ${{ secrets.SERVER_USERNAME }}
+          private_key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
+#          host_fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+          command: |
             cd /home/${{ secrets.SERVER_USERNAME }}/app
-            docker-compose pull
             docker-compose down
             docker-compose up -d
