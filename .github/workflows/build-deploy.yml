@@ -12,7 +12,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: set up JDK 17
@@ -29,18 +29,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Copy code to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SERVER_IP_ADDRESS }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
-          source: "."
-          target: "/home/${{ secrets.SERVER_USERNAME }}/app"
+      # Рабочий вариант
+#      - name: Copy code to server
+#        uses: appleboy/scp-action@master
+#        with:
+#          host: ${{ secrets.SERVER_IP_ADDRESS }}
+#          username: ${{ secrets.SERVER_USERNAME }}
+#          key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
+#          source: "."
+#          target: "/home/${{ secrets.SERVER_USERNAME }}/app"
 
+      # Нерабочий вариант
 #      - name: Execute Docker Compose on server
 #        uses: appleboy/ssh-action@master
 #        with:
@@ -53,6 +55,7 @@ jobs:
 #            docker-compose down
 #            docker-compose up -d
 
+      # Нерабочий вариант
       # https://github.com/marketplace/actions/ssh-command
 #      - name: Execute Docker Compose on server
 #        uses: D3rHase/ssh-command-action@latest
@@ -67,11 +70,18 @@ jobs:
 #            docker-compose down
 #            docker-compose up -d
 
+      # Рабочий вариант
       - name: Setup ssh
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
 
+      # Проверяем
+      - name: Copy files to remote server
+        run: |
+          scp -o StrictHostKeyChecking=no -r ./* ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }}:/home/${{ secrets.SERVER_USERNAME }}/app
+
+      # Рабочий вариант
       - name: Run Docker Compose
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} 'cd /home/${{ secrets.SERVER_USERNAME }}/app && docker-compose down && docker compose up -d'
