@@ -54,15 +54,24 @@ jobs:
 #            docker-compose up -d
 
       # https://github.com/marketplace/actions/ssh-command
-      - name: Execute Docker Compose on server
-        uses: D3rHase/ssh-command-action@latest
+#      - name: Execute Docker Compose on server
+#        uses: D3rHase/ssh-command-action@latest
+#        with:
+#          host: ${{ secrets.SERVER_IP_ADDRESS }}
+#          port: "22"
+#          user: ${{ secrets.SERVER_USERNAME }}
+#          private_key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
+##          host_fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+#          command: |
+#            cd /home/${{ secrets.SERVER_USERNAME }}/app
+#            docker-compose down
+#            docker-compose up -d
+
+      - name: Setup ssh
+        uses: webfactory/ssh-agent@v0.5.3
         with:
-          host: ${{ secrets.SERVER_IP_ADDRESS }}
-          port: "22"
-          user: ${{ secrets.SERVER_USERNAME }}
-          private_key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
-#          host_fingerprint: ${{ secrets.HOST_FINGERPRINT }}
-          command: |
-            cd /home/${{ secrets.SERVER_USERNAME }}/app
-            docker-compose down
-            docker-compose up -d
+          ssh-private-key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
+
+      - name: Run Docker Compose
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} 'cd /home/${{ secrets.SERVER_USERNAME }}/app && docker-compose down && docker compose up -d'
