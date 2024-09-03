@@ -166,7 +166,7 @@ docker-compose up.
 
 ### Ссылки на ресурсы приложения и используемых инструментов
 (при запуске с локальной машины; при запуске на удаленном сервере localhost следует заменить на IP-адрес хоста)
-1. Swagger UI (для вызова API через браузер): http://localhost:8080 
+1. Swagger UI (для вызова API через браузер): http://localhost:8080/swagger-ui/index.html
 1. RabbitMQ: http://localhost:15672
 2. Actuator: http://localhost:8080/actuator
 3. Prometheus: http://localhost:8080/actuator/prometheus
