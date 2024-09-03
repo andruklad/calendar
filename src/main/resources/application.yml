@@ -16,7 +16,8 @@ spring:
     change-log: classpath:liquibase/changelog-master.yaml
 
   rabbitmq:
-    host: rabbitmq
+#    host: localhost # При запуске приложения напрямую, без докера
+    host: rabbitmq # При запуске приложения через docker-compose
     port: 5672
     username: guest
     password: guest
@@ -24,11 +25,8 @@ spring:
 app:
   calendar:
     url: https://xmlcalendar.ru/data
-#    url: https://xmlcalendar.ru/datatestfail
-    countryList: ru
-#    countryList: ru,by,kz,uz
-    yearList: 2024
-#    yearList: 2020,2021,2022,2023,2024
+    countryList: ru,by,kz,uz
+    yearList: 2020,2021,2022,2023,2024
   loadCalendarInterval: 60000
 
 rabbitmq:

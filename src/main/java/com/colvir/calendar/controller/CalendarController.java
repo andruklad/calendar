@@ -29,7 +29,7 @@ public class CalendarController {
 
     @GetMapping("get-day-type")
     // Пример формата даты: 2024-08-13
-    public DayTypeResponse getDayType(@RequestParam String country, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+    public DayTypeResponse getDayType(@RequestParam String country, @RequestParam(name = "date, format: yyyy-MM-dd") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
 
         return calendarResourceService.getDayType(country, date);
     }
