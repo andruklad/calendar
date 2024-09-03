@@ -43,4 +43,4 @@ jobs:
 
       - name: Run Docker Compose
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} 'cd /home/${{ secrets.SERVER_USERNAME }}/app && docker-compose down && docker compose up -d'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP_ADDRESS }} 'cd /home/${{ secrets.SERVER_USERNAME }}/app && docker-compose down && docker compose up -d --build'
