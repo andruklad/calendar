@@ -23,6 +23,10 @@ public class CalendarMetricsAspect {
     public void calendarControllerMethods() {
     }
 
+    @Pointcut("within(com.colvir.calendar.controller.ExceptionHandlerController)")
+    public void calendarExceptionMethods() {
+    }
+
     @Pointcut("execution(public * com.colvir.calendar.service.CalendarOriginalService.loadCalendarOriginalAll())")
     public void loadCalendarOriginalAllMethod() {
     }
@@ -31,9 +35,22 @@ public class CalendarMetricsAspect {
     @Around("calendarControllerMethods()")
     public Object logCallCalendarControllerMethods(ProceedingJoinPoint joinPoint) {
 
+        String metricName = "calendar_controller_call_count";
+        return logCallMethods(joinPoint, metricName);
+    }
+
+    // Мониторинг генерации внутренних исключений приложения
+    @Around("calendarExceptionMethods()")
+    public Object logCalendarExceptionMethods(ProceedingJoinPoint joinPoint) {
+
+        String metricName = "calendar_internal_exception_count";
+        return logCallMethods(joinPoint, metricName);
+    }
+
+    private Object logCallMethods(ProceedingJoinPoint joinPoint, String metricName) {
         String methodName = joinPoint.getSignature().getName();
         Counter callCounter = meterRegistry
-                .counter("calendar_controller_call_count"
+                .counter(metricName
                         , "method"
                         , methodName);
         callCounter.increment();
