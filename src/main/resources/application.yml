@@ -27,7 +27,10 @@ app:
     url: https://xmlcalendar.ru/data
     countryList: ru,by,kz,uz
     yearList: 2020,2021,2022,2023,2024
-  loadCalendarInterval: 60000
+  loadCalendarInitialDelay: 1 # min
+  loadCalendarInterval: 60 # min
+  processCalendarInitialDelay: 10 # min
+  processCalendarInterval: 60 # min
 
 rabbitmq:
   exchange: calendar_exchange

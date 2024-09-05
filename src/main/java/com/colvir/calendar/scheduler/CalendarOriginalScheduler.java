@@ -11,12 +11,12 @@ public class CalendarOriginalScheduler {
 
     private final CalendarOriginalService calendarOriginalService;
 
-    @Scheduled(initialDelay = 1*60*1000 /*1 min*/, fixedDelayString = "${app.loadCalendarInterval}")
+    @Scheduled(initialDelayString = "#{${app.loadCalendarInitialDelay} * 60000}", fixedDelayString = "#{${app.loadCalendarInterval} * 60000}")
     public void loadCalendarOriginalAll() {
         calendarOriginalService.loadCalendarOriginalAll();
     }
 
-    @Scheduled(initialDelay = 10*60*1000 /*10 min*/, fixedDelayString = "${app.loadCalendarInterval}")
+    @Scheduled(initialDelayString = "#{${app.processCalendarInitialDelay} * 60000}", fixedDelayString = "#{${app.processCalendarInterval} * 60000}")
     public void processCalendarOriginalByNewStatus() {
         calendarOriginalService.processCalendarOriginalByNewStatus();
     }

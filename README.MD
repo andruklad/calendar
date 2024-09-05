@@ -1,6 +1,6 @@
 # Calendar
 
-Version: 2.0.
+Version: 2.1.
 
 Author: Andrei Kladkevich
 
@@ -131,7 +131,10 @@ CalendarFinalStatistic - статистика итогового календа�
 1. Основная часть URL календаря: app.calendar.url
 2. Список стран календаря: app.calendar.countryList
 3. Список лет календаря: app.calendar.yearList
-4. Интервал загрузки календаря в миллисекундах: app.calendar.loadCalendarInterval
+4. Начальная задержка загрузки календаря в минутах: app.loadCalendarInitialDelay
+5. Интервал загрузки календаря в минутах: app.loadCalendarInterval
+6. Начальная задержка обработки календаря в минутах: app.processCalendarInitialDelay
+7. Интервал обработки календаря в минутах: app.processCalendarInterval
 
 #### СУБД PostgreSQL
 1. Имя пользователя БД Postgres: spring.datasource.username
