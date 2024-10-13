@@ -1,0 +1,8 @@
+scrape_configs:
+  - job_name: 'MyAppMetrics'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 3s
+    static_configs:
+      - targets: ['java-app:8080'] # 'java-app' - имя сервиса в docker-compose.yml
+        labels:
+          application: 'Calendar Application'

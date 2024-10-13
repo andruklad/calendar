@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: calendar
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  liquibase:
+    change-log: classpath:liquibase/changelog-master.yaml
+
+  rabbitmq:
+#    host: localhost # При запуске приложения напрямую, без докера
+    host: rabbitmq # При запуске приложения через docker-compose
+    port: 5672
+    username: guest
+    password: guest
+
+app:
+  calendar:
+    url: https://xmlcalendar.ru/data
+    countryList: ru,by,kz,uz
+    yearList: 2020,2021,2022,2023,2024
+  loadCalendarInitialDelay: 1 # min
+  loadCalendarInterval: 60 # min
+  processCalendarInitialDelay: 10 # min
+  processCalendarInterval: 60 # min
+
+rabbitmq:
+  exchange: calendar_exchange
+  routing:
+    originalInfoKey: original_info_key
+    originalErrorKey: original_error_key
+    finalInfoKey: final_info_key
+    finalErrorKey: final_error_key
+  queue:
+    originalInfo: original_info
+    originalError: original_error
+    finalInfo: final_info
+    finalError: final_error
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, metrics, info
